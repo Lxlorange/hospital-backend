@@ -13,10 +13,10 @@ spring:
     password: 123456
 
 
-#图片上传
+
 web:
-  uploadpath: E:/images/queue-system/  #图片上传的路径
-  load-path: file:E://images/queue-system/ #图片访问、加载的路径
+  uploadpath: E:/images/queue-system/  #图片的路径
+  load-path: file:E://images/queue-system/
 
 #jwt配置
 jwt:
