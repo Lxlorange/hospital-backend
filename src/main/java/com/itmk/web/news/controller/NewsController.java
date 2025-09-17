@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
-import com.itmk.web.department.entity.DepartmentPageParm;
 import com.itmk.web.news.entity.News;
 import com.itmk.web.news.entity.NewsPageParm;
 import com.itmk.web.news.service.NewsService;
