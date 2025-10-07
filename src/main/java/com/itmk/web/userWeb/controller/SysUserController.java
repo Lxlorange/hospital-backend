@@ -179,6 +179,8 @@ public class SysUserController {
     //登录
     @PostMapping("/login")
     public ResultVo login(HttpServletRequest request, @RequestBody LoginParm parm) {
+        // 暂时禁用验证码验证 - 测试期间不需要验证码
+        /*
         //获取前端传递过来的code
         String code = parm.getCode();
         //获取session
@@ -192,6 +194,7 @@ public class SysUserController {
         if (!code1.equals(code)) {
             return ResultUtils.error("验证码不正确!");
         }
+        */
         //springsecurity加密之后的密码
         String password = passwordEncoder.encode(parm.getPassword());
         //查询用户信息,交给springsecurity查询
