@@ -70,6 +70,7 @@ public class DepartmentController {
      * @param department
      * @return
      */
+
     @PostMapping
     @PreAuthorize("hasAuthority('sys:department:add')")
     public ResultVo add(@RequestBody Department department){
@@ -78,6 +79,8 @@ public class DepartmentController {
         }
         return ResultUtils.error("新增失败!");
     }
+
+
 
     /**
      * 编辑科室

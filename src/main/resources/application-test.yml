@@ -8,15 +8,15 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/practice?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    url: jdbc:mysql://8.130.160.51:3306/practice?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
     username: root
-    password: 123456
+    password: BJTUSoftware2025
 
 
 
 web:
-  uploadpath: E:/images/queue-system/  #图片的路径
-  load-path: file:E://images/queue-system/
+  uploadpath: uploads
+  load-path: file:uploads/
 
 #jwt配置
 jwt:
