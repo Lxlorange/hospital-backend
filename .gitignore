@@ -2,3 +2,10 @@ target
 .idea
 src/main/resources/
 src/main/resources/application-test.yml
+src/main/java/com/itmk/web/userPhone
+src/main/java/com/itmk/web/phone
+src/main/java/com/itmk/web/patientOrder
+src/main/java/com/itmk/web/order
+src/main/java/com/itmk/web/news
+src/main/java/com/itmk/web/informationWeb
+src/main/java/com/itmk/web/advice

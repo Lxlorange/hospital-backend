@@ -45,8 +45,6 @@ public class DepartmentController {
 
     /**
      * 列表查询
-     * @param parm
-     * @return
      */
     @GetMapping("/getList")
     public ResultVo getList(DepartmentPageParm parm){
