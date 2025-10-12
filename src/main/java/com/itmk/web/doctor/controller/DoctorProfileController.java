@@ -8,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 医生个人主页控制器
- */
+
 @RestController
 @RequestMapping("/api/doctorProfile")
 public class DoctorProfileController {

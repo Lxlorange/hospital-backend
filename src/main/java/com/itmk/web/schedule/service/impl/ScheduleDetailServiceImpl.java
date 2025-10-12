@@ -7,7 +7,7 @@ import com.itmk.web.schedule.entity.ScheduleDetail;
 import com.itmk.web.schedule.entity.ScheduleDetailPageParm;
 import com.itmk.web.schedule.mapper.ScheduleDetailMapper;
 import com.itmk.web.schedule.service.ScheduleDetailService;
-import com.itmk.web.phone.entity.DoctorDetailParm;
+//import com.itmk.web.phone.entity.DoctorDetailParm;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,10 +21,10 @@ public class ScheduleDetailServiceImpl extends ServiceImpl<ScheduleDetailMapper,
         return this.baseMapper.getList(page,parm);
     }
 
-    @Override
+    /*@Override
     public List<ScheduleDetail> selectById(DoctorDetailParm doctorDetailParm) {
         return this.baseMapper.selectById(doctorDetailParm);
-    }
+    }*/
 
     @Override
     public void subCount(Integer scheduleId) {

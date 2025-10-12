@@ -5,13 +5,13 @@ import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
 import com.itmk.web.department.service.DepartmentService;
 import com.itmk.web.center.entity.TotalVo;
-import com.itmk.web.patientOrder.service.MakeOrderVisitService;
-import com.itmk.web.schedule.entity.ScheduleDetail;
-import com.itmk.web.schedule.service.ScheduleDetailService;
+/*import com.itmk.web.patientOrder.service.MakeOrderVisitService;
 import com.itmk.web.informationWeb.entity.SysNotice;
 import com.itmk.web.informationWeb.service.SysNoticeService;
+import com.itmk.web.userPhone.service.WxUserService;*/
+import com.itmk.web.schedule.entity.ScheduleDetail;
+import com.itmk.web.schedule.service.ScheduleDetailService;
 import com.itmk.web.userWeb.service.SysUserService;
-import com.itmk.web.userPhone.service.WxUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,17 +30,17 @@ public class HomeController {
     private DepartmentService departmentService;
     @Autowired
     private SysUserService sysUserService;
-    @Autowired
-    private WxUserService wxUserService;
+    /*@Autowired
+    //private WxUserService wxUserService;
     @Autowired
     private MakeOrderVisitService makeOrderVisitService;
     @Autowired
-    private SysNoticeService sysNoticeService;
+    private SysNoticeService sysNoticeService;*/
     @Autowired
     private ScheduleDetailService scheduleDetailService;
 
     /**
-     * type: 上周、本周、下周
+     * 上周、本周、下周
      * 查询上周、本周、下周数据
      * @param type
      * @param doctorId
@@ -93,14 +93,15 @@ public class HomeController {
      * 首页公告
      * @return
      */
-    @GetMapping("/getIndexNotice")
+
+    /*@GetMapping("/getIndexNotice")
     public ResultVo getIndexNotice(){
         QueryWrapper<SysNotice> query = new QueryWrapper<>();
         query.lambda().orderByDesc(SysNotice::getCreateTime)
                 .last(" limit 3");
         List<SysNotice> list = sysNoticeService.list(query);
         return ResultUtils.success("查询成功",list);
-    }
+    }*/
 
     /**
      * 总数统计
@@ -116,11 +117,11 @@ public class HomeController {
         long ucount = sysUserService.count();
         vo.setSysUserCount(ucount);
         //患者总数
-        long wcount = wxUserService.count();
+        /*long wcount = wxUserService.count();
         vo.setWxUserCount(wcount);
         //就诊次数
         long mcount = makeOrderVisitService.count();
-        vo.setVisitCount(mcount);
+        vo.setVisitCount(mcount);*/
         return ResultUtils.success("查询成功",vo);
     }
 
