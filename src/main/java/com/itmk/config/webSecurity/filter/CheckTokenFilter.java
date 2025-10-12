@@ -5,7 +5,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.itmk.config.webSecurity.detailservice.CustomerUserDetailService;
 import com.itmk.config.webSecurity.exception.CustomerAuthenionException;
 import com.itmk.config.webSecurity.handler.LoginFailureHandler;
-import com.itmk.jwtUtils.JwtUtils;
+import com.itmk.tool.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

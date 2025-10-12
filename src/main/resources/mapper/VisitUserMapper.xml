@@ -2,6 +2,6 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.itmk.web.userPatient.mapper.VisitUserMapper">
+<mapper namespace="com.itmk.netSystem.userPatient.mapper.VisitUserMapper">
 
 </mapper>

@@ -1,10 +1,10 @@
 package com.itmk.config.webSecurity.detailservice;
 
 import com.itmk.config.webSecurity.exception.CustomerAuthenionException;
-import com.itmk.web.menuWeb.entity.SysMenu;
-import com.itmk.web.menuWeb.service.SysMenuService;
-import com.itmk.web.userWeb.entity.SysUser;
-import com.itmk.web.userWeb.service.SysUserService;
+import com.itmk.netSystem.menuWeb.entity.SysMenu;
+import com.itmk.netSystem.menuWeb.service.SysMenuService;
+import com.itmk.netSystem.userWeb.entity.SysUser;
+import com.itmk.netSystem.userWeb.service.SysUserService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
