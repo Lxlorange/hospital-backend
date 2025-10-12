@@ -1,4 +1,4 @@
-package com.itmk.web.schedule.controller;
+package com.itmk.web.setWork.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -7,9 +7,9 @@ import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
 import com.itmk.web.department.entity.Department;
-import com.itmk.web.schedule.entity.ScheduleDetail;
-import com.itmk.web.schedule.entity.ScheduleDetailListParm;
-import com.itmk.web.schedule.service.ScheduleDetailService;
+import com.itmk.web.setWork.entity.ScheduleDetail;
+import com.itmk.web.setWork.entity.ScheduleDetailListParm;
+import com.itmk.web.setWork.service.ScheduleDetailService;
 import com.itmk.web.userWeb.entity.SysUser;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

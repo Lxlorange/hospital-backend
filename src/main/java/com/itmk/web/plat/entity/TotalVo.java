@@ -1,4 +1,4 @@
-package com.itmk.web.center.entity;
+package com.itmk.web.plat.entity;
 
 import lombok.Data;
 

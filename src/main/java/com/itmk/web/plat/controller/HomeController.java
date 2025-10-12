@@ -1,16 +1,16 @@
-package com.itmk.web.center.controller;
+package com.itmk.web.plat.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
 import com.itmk.web.department.service.DepartmentService;
-import com.itmk.web.center.entity.TotalVo;
+import com.itmk.web.plat.entity.TotalVo;
 /*import com.itmk.web.patientOrder.service.MakeOrderVisitService;
 import com.itmk.web.informationWeb.entity.SysNotice;
 import com.itmk.web.informationWeb.service.SysNoticeService;
 import com.itmk.web.userPhone.service.WxUserService;*/
-import com.itmk.web.schedule.entity.ScheduleDetail;
-import com.itmk.web.schedule.service.ScheduleDetailService;
+import com.itmk.web.setWork.entity.ScheduleDetail;
+import com.itmk.web.setWork.service.ScheduleDetailService;
 import com.itmk.web.userWeb.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

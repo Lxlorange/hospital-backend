@@ -1,18 +1,16 @@
-package com.itmk.web.schedule.service.impl;
+package com.itmk.web.setWork.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.itmk.web.schedule.entity.ScheduleDetail;
-import com.itmk.web.schedule.entity.ScheduleDetailPageParm;
-import com.itmk.web.schedule.mapper.ScheduleDetailMapper;
-import com.itmk.web.schedule.service.ScheduleDetailService;
+import com.itmk.web.setWork.entity.ScheduleDetail;
+import com.itmk.web.setWork.entity.ScheduleDetailPageParm;
+import com.itmk.web.setWork.mapper.ScheduleDetailMapper;
+import com.itmk.web.setWork.service.ScheduleDetailService;
 //import com.itmk.web.phone.entity.DoctorDetailParm;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
- 
 @Service
 public class ScheduleDetailServiceImpl extends ServiceImpl<ScheduleDetailMapper, ScheduleDetail> implements ScheduleDetailService {
     @Override

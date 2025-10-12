@@ -1,4 +1,4 @@
-package com.itmk.web.schedule.entity;
+package com.itmk.web.setWork.entity;
 import lombok.Data;
 
  
