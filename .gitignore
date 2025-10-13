@@ -9,3 +9,5 @@ src/main/java/com/itmk/netSystem/order
 src/main/java/com/itmk/netSystem/news
 src/main/java/com/itmk/netSystem/informationWeb
 src/main/java/com/itmk/netSystem/advice
+.idea/jarRepositories.xml
+src/main/resources/application-test.yml
