@@ -5,7 +5,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.itmk.config.webSecurity.detailservice.CustomerUserDetailService;
 import com.itmk.config.webSecurity.exception.CustomerAuthenionException;
 import com.itmk.config.webSecurity.handler.LoginFailureHandler;
-import com.itmk.tool.JwtUtils;
+import com.itmk.tool.Utils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,7 +40,7 @@ public class CheckTokenFilter extends OncePerRequestFilter {
     private List<String> ignoreUrl = Collections.emptyList();
 
     @Autowired
-    private JwtUtils jwtUtils;
+    private Utils jwtUtils;
     @Autowired
     private CustomerUserDetailService customerUserDetailService;
     @Autowired

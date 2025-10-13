@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.google.code.kaptcha.impl.DefaultKaptcha;
-import com.itmk.tool.JwtUtils;
+import com.itmk.tool.Utils;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
 import com.itmk.netSystem.department.entity.Department;
@@ -53,7 +53,7 @@ public class SysUserController {
     @Autowired
     private DefaultKaptcha defaultKaptcha;
     @Autowired
-    private JwtUtils jwtUtils;
+    private Utils jwtUtils;
     @Autowired
     private SysMenuService sysMenuService;
     @Autowired

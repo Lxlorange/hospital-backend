@@ -20,7 +20,7 @@ import java.util.Map;
 @Component
 @Data
 @ConfigurationProperties(prefix = "jwt")
-public class JwtUtils {
+public class Utils {
     //颁发者
     private String issuer;
     //密钥
