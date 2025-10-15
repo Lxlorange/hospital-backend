@@ -387,7 +387,7 @@ public class userWebController {
     }
 
     /**
-     * 重置用户密码为默认值 (666666)
+     * 重置用户密码为默认值
      */
     @PreAuthorize("hasAuthority('sys:user:reset')")
     @PostMapping("/resetPassword")
