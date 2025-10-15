@@ -1,7 +1,7 @@
 package com.itmk.netSystem.setWork.entity;
 import lombok.Data;
 
- 
+
 @Data
 public class setWorkPage {
     private Long currentPage;
