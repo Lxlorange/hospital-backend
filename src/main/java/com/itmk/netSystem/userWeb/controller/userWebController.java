@@ -10,9 +10,9 @@ import com.itmk.tool.Utils;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
 import com.itmk.netSystem.teamDepartment.entity.Department;
-import com.itmk.netSystem.teamDepartment.entity.SelectDept;
-import com.itmk.netSystem.menuWebNet.entity.AssignTreeParm;
-import com.itmk.netSystem.menuWebNet.entity.AssignTreeVo;
+import com.itmk.netSystem.teamDepartment.entity.teamDepartment;
+import com.itmk.netSystem.menuWebNet.entity.AssignTreeNum;
+import com.itmk.netSystem.menuWebNet.entity.AssignTree;
 import com.itmk.netSystem.menuWebNet.entity.SysMenu;
 import com.itmk.netSystem.menuWebNet.service.menuWebNetService;
 import com.itmk.netSystem.userWeb.entity.*;
@@ -65,7 +65,7 @@ public class userWebController {
      * 用户登录接口
      */
     @PostMapping("/login")
-    public ResultVo login(HttpServletRequest request, @RequestBody LoginParm parm) {
+    public ResultVo login(HttpServletRequest request, @RequestBody LoginNum parm) {
         // 验证码验证逻辑
 
         // 认证用户名和密码
@@ -80,7 +80,7 @@ public class userWebController {
         SysUser user = (SysUser)authenticate.getPrincipal();
 
         // 返回用户信息和token
-        LoginVo vo = new LoginVo();
+        Login vo = new Login();
         vo.setUserId(user.getUserId());
         vo.setNickName(user.getNickName());
 
@@ -175,11 +175,11 @@ public class userWebController {
                 .collect(Collectors.toList());
 
         // 设置返回值
-        UserInfo userInfo = new UserInfo();
-        userInfo.setName(user.getNickName());
-        userInfo.setUserId(user.getUserId());
-        userInfo.setPermissons(collect.toArray()); // 权限列表
-        return ResultUtils.success("成功", userInfo);
+        UserInformation userInformation = new UserInformation();
+        userInformation.setName(user.getNickName());
+        userInformation.setUserId(user.getUserId());
+        userInformation.setPermissons(collect.toArray()); // 权限列表
+        return ResultUtils.success("成功", userInformation);
     }
 
     /**
@@ -286,7 +286,7 @@ public class userWebController {
      * 修改用户密码
      */
     @PostMapping("/updatePassword")
-    public ResultVo updatePassword(@RequestBody UpdatePasswordParm parm) {
+    public ResultVo updatePassword(@RequestBody resetPasswordParm parm) {
         SysUser user = userWebService.getById(parm.getUserId());
 
         // 验证原密码是否正确
@@ -309,7 +309,7 @@ public class userWebController {
      * 用户列表查询 (分页)
      */
     @GetMapping("/list")
-    public ResultVo list(SysUserPage parm) {
+    public ResultVo list(userWebPage parm) {
         // 构造分页对象
         IPage<SysUser> page = new Page<>(parm.getCurrentPage(), parm.getPageSize());
         // 构造查询条件 (多表联查用户和科室)
@@ -371,12 +371,12 @@ public class userWebController {
         QueryWrapper<SysUser> query = new QueryWrapper<>();
         query.lambda().eq(SysUser::getDeptId,deptId).orderByDesc(SysUser::getUsername);
         List<SysUser> list = userWebService.list(query);
-        List<SelectDept> deptList = new ArrayList<>();
+        List<teamDepartment> deptList = new ArrayList<>();
 
         // 封装为下拉框需要的格式
         if(list.size() > 0){
             for (int i=0;i<list.size();i++){
-                SelectDept dept = new SelectDept();
+                teamDepartment dept = new teamDepartment();
                 dept.setLabel(list.get(i).getNickName());
                 dept.setValue(Integer.parseInt(list.get(i).getUserId().toString()));
                 deptList.add(dept);
@@ -406,8 +406,8 @@ public class userWebController {
      * 查询用户权限菜单树结构
      */
     @GetMapping("/getAssingTree")
-    public ResultVo getAssingTree(AssignTreeParm parm) {
-        AssignTreeVo assignTree = userWebService.getAssignTree(parm);
+    public ResultVo getAssingTree(AssignTreeNum parm) {
+        AssignTree assignTree = userWebService.getAssignTree(parm);
         return ResultUtils.success("成功查询", assignTree);
     }
 

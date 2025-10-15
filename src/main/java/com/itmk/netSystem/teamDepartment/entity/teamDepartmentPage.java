@@ -4,14 +4,14 @@ import lombok.Data;
 
  
 @Data
-public class DepartmentPageParm {
-    public DepartmentPageParm(Long currentPage, Long pageSize, String deptName) {
+public class teamDepartmentPage {
+    public teamDepartmentPage(Long currentPage, Long pageSize, String deptName) {
         this.currentPage = currentPage;
         this.pageSize = pageSize;
         this.deptName = deptName;
     }
 
-    public DepartmentPageParm() {
+    public teamDepartmentPage() {
     }
 
     private Long currentPage;

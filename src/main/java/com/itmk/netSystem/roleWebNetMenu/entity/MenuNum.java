@@ -6,7 +6,7 @@ import java.util.List;
 
  
 @Data
-public class SaveMenuParm {
+public class MenuNum {
     private Long roleId;
     private List<Long> list;
 }

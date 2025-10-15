@@ -4,7 +4,7 @@ import lombok.Data;
 
  
 @Data
-public class AssignTreeParm {
+public class AssignTreeNum {
     private Long userId;
     private Long roleId;
 }

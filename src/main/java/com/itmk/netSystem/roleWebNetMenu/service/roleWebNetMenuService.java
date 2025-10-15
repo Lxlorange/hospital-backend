@@ -2,11 +2,11 @@ package com.itmk.netSystem.roleWebNetMenu.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.itmk.netSystem.roleWebNetMenu.entity.RoleMenu;
-import com.itmk.netSystem.roleWebNetMenu.entity.SaveMenuParm;
+import com.itmk.netSystem.roleWebNetMenu.entity.MenuNum;
 
  
 public interface roleWebNetMenuService extends IService<RoleMenu> {
-    void saveRoleMenu(SaveMenuParm parm);
+    void saveRoleMenu(MenuNum parm);
     /**
      * 根据角色ID查询其拥有的所有菜单ID列表
      * @param roleId 角色ID

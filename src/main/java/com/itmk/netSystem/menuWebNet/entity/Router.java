@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class RouterVO {
+public class Router {
     private String path;
     private String component;
     private String name;
@@ -22,6 +22,6 @@ public class RouterVO {
         private String icon;
         private Object[] roles;
     }
-    private List<RouterVO> children =new ArrayList<>();
+    private List<Router> children =new ArrayList<>();
 
 }

@@ -2,10 +2,10 @@ package com.itmk.netSystem.userWeb.entity;
 
 import lombok.Data;
 
- 
+
 @Data
-public class UpdatePasswordParm {
+public class UserInformation {
     private Long userId;
-    private String oldPassword;
-    private String password;
+    private String name;
+    private Object[] permissons;
 }

@@ -3,13 +3,13 @@ import lombok.Data;
 
  
 @Data
-public class SelectDept {
-    public SelectDept(String label, Integer value) {
+public class teamDepartment {
+    public teamDepartment(String label, Integer value) {
         this.label = label;
         this.value = value;
     }
 
-    public SelectDept() {
+    public teamDepartment() {
     }
 
     private String label;

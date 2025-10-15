@@ -1,8 +1,8 @@
 package com.itmk.netSystem.userWeb.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.itmk.netSystem.menuWebNet.entity.AssignTreeParm;
-import com.itmk.netSystem.menuWebNet.entity.AssignTreeVo;
+import com.itmk.netSystem.menuWebNet.entity.AssignTreeNum;
+import com.itmk.netSystem.menuWebNet.entity.AssignTree;
 import com.itmk.netSystem.userWeb.entity.SysUser;
 
 import java.util.List;
@@ -61,7 +61,7 @@ public interface userWebService extends IService<SysUser> {
      * @param parm 查询参数，如用户ID或角色ID
      * @return AssignTreeVo 包含菜单树数据的VO
      */
-    AssignTreeVo getAssignTree(AssignTreeParm parm);
+    AssignTree getAssignTree(AssignTreeNum parm);
 
     /**
      * 批量删除用户

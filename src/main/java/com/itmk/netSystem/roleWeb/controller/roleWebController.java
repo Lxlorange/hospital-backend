@@ -5,12 +5,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
-import com.itmk.netSystem.roleWeb.entity.RoleParm;
-import com.itmk.netSystem.roleWeb.entity.SelectItme;
+import com.itmk.netSystem.roleWeb.entity.RoleNum;
+import com.itmk.netSystem.roleWeb.entity.roleWeb;
 import com.itmk.netSystem.roleWeb.entity.SysRole;
 import com.itmk.netSystem.roleWeb.service.roleWebService;
 import com.itmk.netSystem.roleWebNetMenu.service.roleWebNetMenuService;
-import com.itmk.netSystem.roleWebNetMenu.entity.SaveMenuParm;
+import com.itmk.netSystem.roleWebNetMenu.entity.MenuNum;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -118,7 +118,7 @@ public class roleWebController {
      * 角色列表查询 (分页)
      */
     @GetMapping("/getList")
-    public ResultVo getList(RoleParm parm){
+    public ResultVo getList(RoleNum parm){
         // 构造分页对象
         IPage<SysRole> page = new Page<>(parm.getCurrentPage(),parm.getPageSize());
         // 构造查询条件
@@ -139,16 +139,16 @@ public class roleWebController {
     public ResultVo selectList(){
         List<SysRole> list = roleWebService.list();
         // 封装返回的下拉列表数据
-        List<SelectItme> selectItmes = new ArrayList<>();
+        List<roleWeb> roleWebs = new ArrayList<>();
         Optional.ofNullable(list).orElse(new ArrayList<>())
                 .forEach(item ->{
-                    SelectItme vo = new SelectItme();
+                    roleWeb vo = new roleWeb();
                     vo.setCheck(false);
                     vo.setLabel(item.getRoleName());
                     vo.setValue(item.getRoleId());
-                    selectItmes.add(vo);
+                    roleWebs.add(vo);
                 });
-        return  ResultUtils.success("成功",selectItmes);
+        return  ResultUtils.success("成功", roleWebs);
     }
 
     /**
@@ -156,7 +156,7 @@ public class roleWebController {
      */
     @PreAuthorize("hasAuthority('sys:role:assign')")
     @PostMapping("/saveRoleMenu")
-    public ResultVo saveRoleMenu(@RequestBody SaveMenuParm parm){
+    public ResultVo saveRoleMenu(@RequestBody MenuNum parm){
         // 保存角色分配的菜单
         roleWebNetMenuService.saveRoleMenu(parm);
         return  ResultUtils.success("成功");

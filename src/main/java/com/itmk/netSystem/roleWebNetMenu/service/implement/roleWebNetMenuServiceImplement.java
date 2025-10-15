@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.itmk.netSystem.roleWebNetMenu.service.roleWebNetMenuService;
 import com.itmk.netSystem.roleWebNetMenu.entity.RoleMenu;
-import com.itmk.netSystem.roleWebNetMenu.entity.SaveMenuParm;
+import com.itmk.netSystem.roleWebNetMenu.entity.MenuNum;
 import com.itmk.netSystem.roleWebNetMenu.mapper.roleWebNetMenuMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,7 +67,7 @@ public class roleWebNetMenuServiceImplement extends ServiceImpl<roleWebNetMenuMa
     }
     @Override
     @Transactional
-    public void saveRoleMenu(SaveMenuParm parm) {
+    public void saveRoleMenu(MenuNum parm) {
         QueryWrapper<RoleMenu> query = new QueryWrapper<>();
         query.lambda().eq(RoleMenu::getRoleId,parm.getRoleId());
         this.baseMapper.delete(query);

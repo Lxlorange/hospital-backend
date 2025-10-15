@@ -6,8 +6,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
 import com.itmk.netSystem.teamDepartment.entity.Department;
-import com.itmk.netSystem.teamDepartment.entity.DepartmentPageParm;
-import com.itmk.netSystem.teamDepartment.entity.SelectDept;
+import com.itmk.netSystem.teamDepartment.entity.teamDepartmentPage;
+import com.itmk.netSystem.teamDepartment.entity.teamDepartment;
 import com.itmk.netSystem.teamDepartment.service.teamDepartmentService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.List;
+
 // 科室管理控制器
 @RequestMapping("/api/department")
 @RestController
@@ -137,7 +137,7 @@ public class teamDepartmentController {
      * @return ResultVo 包含分页数据的列表
      */
     @GetMapping("/getList")
-    public ResultVo getList(DepartmentPageParm parm){
+    public ResultVo getList(teamDepartmentPage parm){
         // 构造分页对象
         IPage<Department> page = new Page<>(parm.getCurrentPage(),parm.getPageSize());
         // 构造查询条件
@@ -166,10 +166,10 @@ public class teamDepartmentController {
         List<Department> list = teamDepartmentService.list(query);
 
         // 封装为下拉框需要的格式
-        List<SelectDept> deptList = new ArrayList<>();
+        List<teamDepartment> deptList = new ArrayList<>();
         if(list.size() > 0){
             for (int i=0;i<list.size();i++){
-                SelectDept dept = new SelectDept();
+                teamDepartment dept = new teamDepartment();
                 dept.setLabel(list.get(i).getDeptName());
                 dept.setValue(list.get(i).getDeptId());
                 deptList.add(dept);

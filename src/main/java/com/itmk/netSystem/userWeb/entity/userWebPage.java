@@ -4,7 +4,7 @@ import lombok.Data;
 
  
 @Data
-public class SysUserPage {
+public class userWebPage {
      private String phone;
      private String nickName;
      private Long currentPage;

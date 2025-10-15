@@ -2,7 +2,7 @@ package com.itmk.netSystem.menuWebNet.service.implement;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.itmk.netSystem.menuWebNet.entity.MakeMenuTree;
+import com.itmk.netSystem.menuWebNet.entity.MenuTree;
 import com.itmk.netSystem.menuWebNet.entity.SysMenu;
 import com.itmk.netSystem.menuWebNet.mapper.menuWebNetMapper;
 import com.itmk.netSystem.menuWebNet.service.menuWebNetService;
@@ -107,7 +107,7 @@ public class menuWebNetServiceImplement extends ServiceImpl<menuWebNetMapper, Sy
         menuList.add(menu);
 
         // 组装菜单树结构
-        List<SysMenu> tree = MakeMenuTree.makeTree(menuList, -1L);
+        List<SysMenu> tree = MenuTree.makeTree(menuList, -1L);
         return tree;
     }
 

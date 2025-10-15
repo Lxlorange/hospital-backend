@@ -4,7 +4,7 @@ import lombok.Data;
 
  
 @Data
-public class SelectItme {
+public class roleWeb {
     private Long value;
     private String label;
     private Boolean check;

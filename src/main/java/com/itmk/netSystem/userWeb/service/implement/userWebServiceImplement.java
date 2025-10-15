@@ -2,9 +2,9 @@ package com.itmk.netSystem.userWeb.service.implement;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.itmk.netSystem.menuWebNet.entity.AssignTreeParm;
-import com.itmk.netSystem.menuWebNet.entity.AssignTreeVo;
-import com.itmk.netSystem.menuWebNet.entity.MakeMenuTree;
+import com.itmk.netSystem.menuWebNet.entity.AssignTreeNum;
+import com.itmk.netSystem.menuWebNet.entity.AssignTree;
+import com.itmk.netSystem.menuWebNet.entity.MenuTree;
 import com.itmk.netSystem.menuWebNet.entity.SysMenu;
 import com.itmk.netSystem.menuWebNet.service.menuWebNetService;
 import com.itmk.netSystem.userWeb.entity.SysUser;
@@ -178,7 +178,7 @@ public class userWebServiceImplement extends ServiceImpl<userWebMapper, SysUser>
      * @return AssignTreeVo 包含菜单树数据的VO
      */
     @Override
-    public AssignTreeVo getAssignTree(AssignTreeParm parm) {
+    public AssignTree getAssignTree(AssignTreeNum parm) {
         // 查询用户的信息
         SysUser user = this.baseMapper.selectById(parm.getUserId());
         List<SysMenu> menuList = null;
@@ -193,7 +193,7 @@ public class userWebServiceImplement extends ServiceImpl<userWebMapper, SysUser>
         }
 
         // 组装菜单树结构
-        List<SysMenu> makeTree = MakeMenuTree.makeTree(menuList, 0L);
+        List<SysMenu> makeTree = MenuTree.makeTree(menuList, 0L);
 
         // 查询角色原来的菜单权限
         List<SysMenu> roleList = menuWebNetService.getMenuByRoleId(parm.getRoleId());
@@ -208,7 +208,7 @@ public class userWebServiceImplement extends ServiceImpl<userWebMapper, SysUser>
                 });
 
         // 组装返回数据
-        AssignTreeVo vo = new AssignTreeVo();
+        AssignTree vo = new AssignTree();
         vo.setCheckList(ids.toArray()); // 角色已拥有的菜单ID列表
         vo.setMenuList(makeTree); // 完整的菜单树结构
         return vo;

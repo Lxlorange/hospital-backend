@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 // 菜单树和路由数据组装工具类
-public class MakeMenuTree {
+public class MenuTree {
 
     /**
      * 构造用于前端路由的RouterVO列表
@@ -15,9 +15,9 @@ public class MakeMenuTree {
      * @param pid 父级ID
      * @return List<RouterVO> 路由列表
      */
-    public static List<RouterVO> makeRourer(List<SysMenu> menuList, Long pid) {
+    public static List<Router> makeRourer(List<SysMenu> menuList, Long pid) {
         // 构建存放路由数据的容器
-        List<RouterVO> list = new ArrayList<>();
+        List<Router> list = new ArrayList<>();
 
         // 过滤出当前父级下的菜单
         Optional.ofNullable(menuList).orElse(new ArrayList<>())
@@ -25,13 +25,13 @@ public class MakeMenuTree {
                 .filter(item -> item != null && item.getParentId().equals(pid))
                 .forEach(item -> {
                     // 组装路由
-                    RouterVO router = new RouterVO();
+                    Router router = new Router();
                     // 设置路由的名称和路径
                     router.setName(item.getName());
                     router.setPath(item.getPath());
 
                     // 递归设置子路由
-                    List<RouterVO> children = makeRourer(menuList, item.getMenuId());
+                    List<Router> children = makeRourer(menuList, item.getMenuId());
                     router.setChildren(children);
 
                     // 处理一级菜单 (顶层)
@@ -43,8 +43,8 @@ public class MakeMenuTree {
                             router.setRedirect(item.getPath());
 
                             // 构造子路由列表
-                            List<RouterVO> listChild = new ArrayList<>();
-                            RouterVO child = new RouterVO();
+                            List<Router> listChild = new ArrayList<>();
+                            Router child = new Router();
                             child.setName(item.getName());
                             child.setPath(item.getPath());
                             child.setComponent(item.getUrl());

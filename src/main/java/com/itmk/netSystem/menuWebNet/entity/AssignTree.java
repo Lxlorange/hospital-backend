@@ -7,7 +7,7 @@ import java.util.List;
 
  
 @Data
-public class AssignTreeVo {
+public class AssignTree {
     private List<SysMenu> menuList = new ArrayList<>();
     private Object[] checkList;
 }

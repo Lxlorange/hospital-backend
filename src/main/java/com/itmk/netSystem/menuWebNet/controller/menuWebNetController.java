@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
-import com.itmk.netSystem.menuWebNet.entity.MakeMenuTree;
-import com.itmk.netSystem.menuWebNet.entity.RouterVO;
+import com.itmk.netSystem.menuWebNet.entity.MenuTree;
+import com.itmk.netSystem.menuWebNet.entity.Router;
 import com.itmk.netSystem.menuWebNet.entity.SysMenu;
 import com.itmk.netSystem.menuWebNet.service.menuWebNetService;
 import com.itmk.netSystem.userWeb.entity.SysUser;
@@ -84,7 +84,7 @@ public class menuWebNetController {
                 .filter(item -> item != null &&  StringUtils.isNotEmpty(item.getType()) && !item.getType().equals("2")).collect(Collectors.toList());
 
         // 组装成前端需要的路由数据结构
-        List<RouterVO> rourer = MakeMenuTree.makeRourer(collect, 0L);
+        List<Router> rourer = MenuTree.makeRourer(collect, 0L);
         return ResultUtils.success("成功",rourer);
     }
 
@@ -173,7 +173,7 @@ public class menuWebNetController {
         List<SysMenu> list = menuWebNetService.list(query);
 
         // 组装树形结构数据 (从根节点 0L 开始)
-        List<SysMenu> menuList = MakeMenuTree.makeTree(list, 0L);
+        List<SysMenu> menuList = MenuTree.makeTree(list, 0L);
         return ResultUtils.success("成功",menuList);
     }
 
