@@ -5,9 +5,12 @@ import com.itmk.utils.ResultVo;
 import com.itmk.netSystem.doctor.entity.DoctorProfileVo;
 import com.itmk.netSystem.doctor.service.DoctorProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-
+/**
+ * 医生个人主页控制器
+ */
 @RestController
 @RequestMapping("/api/doctorProfile")
 public class DoctorProfileController {
@@ -52,17 +55,17 @@ public class DoctorProfileController {
     }
 
     /**
-     * 更新当前登录医生的个人主页信息
+     * 更新当前登录医生的个人主页信息（提交审核申请）
      * @param doctorProfileVo 医生信息
-     * @return 更新结果
+     * @return 提交结果
      */
     //@PreAuthorize("hasAuthority('sys:doctor:profile:edit')")
     @PostMapping("/updateMyProfile")
     public ResultVo updateMyProfile(@RequestBody DoctorProfileVo doctorProfileVo) {
-        boolean result = doctorProfileService.updateMyProfile(doctorProfileVo);
+        boolean result = doctorProfileService.submitUpdateRequest(doctorProfileVo);
         if (result) {
-            return ResultUtils.success("更新成功!");
+            return ResultUtils.success("更新申请已提交，等待管理员审核");
         }
-        return ResultUtils.error("更新失败!");
+        return ResultUtils.error("提交申请失败");
     }
 }

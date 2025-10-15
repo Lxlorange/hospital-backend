@@ -1,7 +1,11 @@
 package com.itmk.netSystem.doctor.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.itmk.netSystem.doctor.entity.DoctorProfileVo;
+import com.itmk.netSystem.userWeb.entity.SysUser;
+
+import java.util.List;
 
 /**
  * 医生个人主页服务接口
@@ -9,9 +13,7 @@ import com.itmk.netSystem.doctor.entity.DoctorProfileVo;
 public interface DoctorProfileService extends IService<DoctorProfileVo> {
 
     /**
-     * 获取医生个人主页信息
-     * @param doctorId 医生ID
-     * @return 医生个人主页信息
+     * 获取医生列表
      */
     DoctorProfileVo getDoctorProfile(Long doctorId);
 
@@ -34,4 +36,11 @@ public interface DoctorProfileService extends IService<DoctorProfileVo> {
      * @return 更新结果
      */
     boolean updateMyProfile(DoctorProfileVo doctorProfileVo);
+    
+    /**
+     * 提交医生个人主页信息更新申请
+     * @param doctorProfileVo 医生信息
+     * @return 提交结果
+     */
+    boolean submitUpdateRequest(DoctorProfileVo doctorProfileVo);
 }
