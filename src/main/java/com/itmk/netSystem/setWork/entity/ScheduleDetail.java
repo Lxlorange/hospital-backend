@@ -1,4 +1,5 @@
 package com.itmk.netSystem.setWork.entity;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -11,26 +12,54 @@ import java.math.BigDecimal;
 @TableName("schedule_detail")
 public class ScheduleDetail implements Serializable {
     private static final long serialVersionUID = 1L;
+
     @TableId(type = IdType.AUTO)
     private Integer scheduleId;
+
     private Integer doctorId;
+
     private String doctorName;
+
     private String times;
+
     private String week;
+
     private Integer witchWeek;
+
+    // --- 主要修改点 ---
+    /**
+     * 号别名称 (数据库字段)
+     * 用于存储 "普通号", "专家号" 等, 这是计算价格的依据。
+     */
+    private String levelName;
+
     private Integer amount;
+
     private Integer lastAmount;
+
     private String type;
+
+    // --- 非数据库字段，用于业务逻辑和数据传输 ---
+
     @TableField(exist = false)
     private Integer deptId;
+
     @TableField(exist = false)
     private String deptName;
+
+    /**
+     * 挂号价格 (非数据库字段)
+     * 该字段由业务逻辑根据 level_name 和医生信息动态计算并填充，用于返回给前端显示。
+     * 使用 @TableField(exist = false) 明确告诉MyBatis-Plus，这个字段不与数据库表中的任何列对应。
+     */
     @TableField(exist = false)
     private BigDecimal price;
 
 
+    // --- 业务逻辑方法 ---
+
     /**
-     * 业务逻辑方法：判断当前排班是否已挂满
+     * 判断当前排班是否已挂满
      * @return 如果剩余号源小于或等于0，则返回 true；否则返回 false。
      */
     public boolean isFullyBooked() {
@@ -38,7 +67,7 @@ public class ScheduleDetail implements Serializable {
     }
 
     /**
-     * 业务逻辑方法：减少一个剩余号源
+     * 减少一个剩余号源
      * 如果号源充足，则减少一个并返回true；否则返回false。
      */
     public boolean decreaseLastAmount() {
@@ -63,6 +92,16 @@ public class ScheduleDetail implements Serializable {
 
     public ScheduleDetail doctorName(String doctorName) {
         this.doctorName = doctorName;
+        return this;
+    }
+
+    public ScheduleDetail levelName(String levelName) {
+        this.levelName = levelName;
+        return this;
+    }
+
+    public ScheduleDetail price(BigDecimal price) {
+        this.price = price;
         return this;
     }
 

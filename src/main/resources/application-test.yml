@@ -28,8 +28,10 @@ jwt:
   expiration: 3000
 
 
+# 白名单URL配置
 ignore:
-  url: /api/sysUser/login,/api/sysUser/getImage,/api/upload/uploadImage,/wxapi/allApi
+  url: /api/sysUser/login,/api/sysUser/getImage,/api/upload/uploadImage,/wxapi/allApi,/swagger-ui/**,/swagger-ui.html,/swagger-resources/**,/v3/api-docs,/v2/api-docs,/webjars/**,/api/sysUser/api-docs,/webjars,/doc.html,/favicon.ico
+
 
 
 mybatis-plus:

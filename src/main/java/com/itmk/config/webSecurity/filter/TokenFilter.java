@@ -20,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 
@@ -34,7 +35,7 @@ import java.util.Map;
 public class TokenFilter extends OncePerRequestFilter {
 
     // 忽略Token校验的URL列表
-    @Value("#{'${ignore.url}'.split(',')}")
+    @Value("${ignore.url}")
     private List<String> ignoreUrl = Collections.emptyList();
 
     @Autowired
@@ -43,6 +44,9 @@ public class TokenFilter extends OncePerRequestFilter {
     private CustomerService customerService; // 用户详情服务
     @Autowired
     private LoginFailureHandler loginFailureHandler; // 认证失败处理器
+
+    // Spring 提供的路径匹配器，专门用于处理带通配符的URL
+    private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     /**
      * 从 "Authorization" 请求头中提取 Bearer Token
@@ -103,11 +107,15 @@ public class TokenFilter extends OncePerRequestFilter {
             // 获取请求的URL
             String uri = request.getRequestURI();
 
-            // 如果请求不在白名单，且不是图片或微信API请求，则进行token验证
-            if(!ignoreUrl.contains(uri) && !uri.contains("/images/") && !uri.startsWith("/wxapi/allApi/")){
+            // 使用 AntPathMatcher 来检查请求的URI是否匹配任何一个白名单模式
+            boolean isIgnored = ignoreUrl.stream().anyMatch(pattern -> antPathMatcher.match(pattern.trim(), uri));
+
+            // 如果请求不在白名单内，则进行token验证
+            if (!isIgnored) {
                 validateToken(request);
             }
         }catch (AuthenticationException e){
+            e.printStackTrace();
             // 认证失败，调用自定义失败处理器返回JSON
             loginFailureHandler.commence(request,response,e);
             return;
