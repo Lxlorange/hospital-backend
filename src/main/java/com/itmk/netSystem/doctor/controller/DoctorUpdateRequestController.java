@@ -98,7 +98,7 @@ public class DoctorUpdateRequestController {
      * @param reviewComment 审核意见
      * @return 审核结果
      */
-    @PostMapping("/review")
+    @GetMapping("/review")
     public ResultVo reviewUpdateRequest(
             @RequestParam Long requestId,
             @RequestParam String status,

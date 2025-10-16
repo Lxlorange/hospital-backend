@@ -103,9 +103,8 @@ curl -X GET http://localhost:8080/api/doctorUpdateRequest/detail/1 \
 ```
 
 ### 3) 管理员审核申请（通过/拒绝）
-- URL：`POST /api/doctorUpdateRequest/review`
+- URL：`GET api/doctorUpdateRequest/review`
 - 权限：管理员
-- 提交方式：`application/x-www-form-urlencoded`
 - 表单参数：
   - `requestId`：申请ID（必填）
   - `status`：审核状态（`1`通过、`2`拒绝）
@@ -113,10 +112,7 @@ curl -X GET http://localhost:8080/api/doctorUpdateRequest/detail/1 \
 
 curl 示例（通过）：
 ```
-curl -X POST http://localhost:8080/api/doctorUpdateRequest/review \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
-  -H 'token: {管理员登录token}' \
-  -d 'requestId=1&status=1&reviewComment=信息有效，予以通过'
+curl -G 'http://localhost:8089/api/doctorUpdateRequest/review' -H "token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJpdG1rIiwiZXhwIjoxNzYwNzY2NzMyLCJ1c2VySWQiOiIxIiwiaWF0IjoxNzYwNTg2NzMyLCJ1c2VybmFtZSI6ImFkbWluIn0.oPb5WqRkZjMQL5nZkihWDFLeohOTKWhWHJPUtiZo0B4" --data-urlencode "requestId=1" --data-urlencode "status=1" --data-urlencode "reviewComment=审核通过"
 ```
 
 curl 示例（拒绝）：
