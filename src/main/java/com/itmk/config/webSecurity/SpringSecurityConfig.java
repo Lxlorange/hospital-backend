@@ -50,9 +50,9 @@ public class SpringSecurityConfig {
     }
 
 
+
     /**
      * 跨域资源共享(CORS)配置 (统一配置源)
-     *
      * @return CorsConfigurationSource
      */
     @Bean
@@ -76,7 +76,6 @@ public class SpringSecurityConfig {
 
     /**
      * 静态资源白名单
-     *
      * @return 静态资源路径数组
      */
     private String[] getStaticResources() {
@@ -90,7 +89,6 @@ public class SpringSecurityConfig {
 
     /**
      * API文档白名单 (如Swagger)
-     *
      * @return API文档路径数组
      */
     private String[] getSwaggerPermitUrls() {
@@ -104,7 +102,6 @@ public class SpringSecurityConfig {
 
     /**
      * Actuator健康检查端点白名单
-     *
      * @return Actuator路径数组
      */
     private String[] getActuatorPermitUrls() {
@@ -181,4 +178,4 @@ public class SpringSecurityConfig {
         // 3. 构建并返回配置好的SecurityFilterChain
         return http.build();
     }
-}
+    }
