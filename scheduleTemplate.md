@@ -69,6 +69,8 @@
 
 整体替换并保存一个医生的所有排班模板。后端逻辑为“先删后增”，确保数据完全更新。
 
+-   **注意**: 后端将根据号别类型和医生职称自动计算价格，前端**无需**也**不应**传递 `price` 字段。
+-   **设定价格**：普通号（50元）、专家号（副主任医师60元，主任医师80元、知名主任医师100元）、特需号（500元）、国际医疗（1000元）
 -   **功能**: 保存医生模板
 -   **Method**: `POST`
 -   **URL**: `/api/schedule/template/{doctorId}`
@@ -83,8 +85,7 @@
         "slots": [
           {
             "slotType": "普通号",
-            "totalAmount": 20,
-            "price": 50.00
+            "totalAmount": 20
           }
         ]
       },
@@ -94,13 +95,11 @@
         "slots": [
           {
             "slotType": "专家号",
-            "totalAmount": 8,
-            "price": 80.00
+            "totalAmount": 8
           },
           {
-            "slotType": "特需专家号",
-            "totalAmount": 2,
-            "price": 300.00
+            "slotType": "特需号",
+            "totalAmount": 2
           }
         ]
       }
@@ -171,7 +170,7 @@
             {
               "instanceSlotId": 1,
               "instanceId": 1,
-              "slotType": "特需专家号",
+              "slotType": "特需号",
               "totalAmount": 100,
               "availableAmount": 100,
               "price": 300.00

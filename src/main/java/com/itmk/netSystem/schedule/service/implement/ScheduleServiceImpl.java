@@ -7,6 +7,7 @@ import com.itmk.netSystem.schedule.mapper.*;
 import com.itmk.netSystem.schedule.service.ScheduleService;
 import com.itmk.netSystem.teamDepartment.entity.Department;
 import com.itmk.netSystem.userWeb.entity.SysUser;
+import com.itmk.netSystem.userWeb.mapper.userWebMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,11 +26,13 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Autowired private TemplateSlotMapper templateSlotMapper;
     @Autowired private ScheduleInstanceMapper instanceMapper;
     @Autowired private InstanceSlotMapper instanceSlotMapper;
+    @Autowired private userWebMapper SysUserMapper;
 
     // 注入用于关联查询的Mapper
     @Autowired private com.itmk.netSystem.userWeb.mapper.userWebMapper sysUserMapper;
     @Autowired private com.itmk.netSystem.teamDepartment.mapper.teamDepartmentMapper departmentMapper;
 
+    //获得某个医生的所有排班模板
     @Override
     public List<ScheduleTemplate> getDoctorTemplates(Long doctorId) {
         List<ScheduleTemplate> templates = templateMapper.selectList(
@@ -45,10 +48,19 @@ public class ScheduleServiceImpl implements ScheduleService {
         return templates;
     }
 
+    /**
+     * 3.2 保存医生排班模板 (后端自动计算价格版)
+     */
     @Override
     @Transactional
     public void saveDoctorTemplates(Long doctorId, List<Map<String, Object>> request) {
-        // 1. 删除该医生的所有旧模板及关联的号源
+        // 2. 在所有操作开始前，先获取医生的信息，特别是职称
+        SysUser doctor = sysUserMapper.selectById(doctorId);
+        if (doctor == null) {
+            throw new RuntimeException("未找到ID为 " + doctorId + " 的医生信息");
+        }
+
+        // 3. 删除该医生的所有旧模板及关联的号源 (逻辑不变)
         List<ScheduleTemplate> oldTemplates = templateMapper.selectList(
                 new QueryWrapper<ScheduleTemplate>().eq("doctor_id", doctorId)
         );
@@ -59,27 +71,33 @@ public class ScheduleServiceImpl implements ScheduleService {
             templateMapper.deleteBatchIds(oldTemplateIds);
         }
 
-        // 2. 插入新的模板数据
+        // 4. 插入新的模板数据 (逻辑修改)
         for (Map<String, Object> reqMap : request) {
             ScheduleTemplate newTemplate = new ScheduleTemplate();
             newTemplate.setDoctorId(doctorId);
             newTemplate.setDayOfWeek((Integer) reqMap.get("dayOfWeek"));
             newTemplate.setTimeSlot((Integer) reqMap.get("timeSlot"));
-            templateMapper.insert(newTemplate); // 插入后，MyBatis-Plus会自动回填templateId
+            templateMapper.insert(newTemplate);
 
             List<Map<String, Object>> slots = (List<Map<String, Object>>) reqMap.get("slots");
             for (Map<String, Object> slotMap : slots) {
                 TemplateSlot newSlot = new TemplateSlot();
                 newSlot.setTemplateId(newTemplate.getTemplateId());
-                newSlot.setSlotType((String) slotMap.get("slotType"));
+                String slotType = (String) slotMap.get("slotType");
+                newSlot.setSlotType(slotType);
                 newSlot.setTotalAmount((Integer) slotMap.get("totalAmount"));
-                // 做类型转换以确保安全
-                newSlot.setPrice(new BigDecimal(String.valueOf(slotMap.get("price"))));
+
+
+                BigDecimal price = calculatePrice(slotType, doctor.getJobTitle());
+                newSlot.setPrice(price);
+
                 templateSlotMapper.insert(newSlot);
             }
         }
     }
 
+
+    //根据模板在一段日期内生成排班实例
     @Override
     @Transactional
     public void generateInstances(Map<String, String> request) {
@@ -126,6 +144,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         }
     }
 
+    //根据条件在一段时间内查询排班实例
     @Override
     public List<ScheduleInstance> findInstances(String startDate, String endDate, Long deptId, Long doctorId) {
         // 使用 mybatis-plus-join 进行连表查询
@@ -159,6 +178,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         return instances;
     }
 
+    //更新排班实例状态
     @Override
     public void updateInstanceStatus(Long instanceId, Map<String, Integer> request) {
         Integer status = request.get("status");
@@ -167,6 +187,34 @@ public class ScheduleServiceImpl implements ScheduleService {
             instance.setInstanceId(instanceId);
             instance.setStatus(status);
             instanceMapper.updateById(instance);
+        }
+    }
+
+    /**
+     * 根据号别类型和医生职称计算价格的私有辅助方法
+     * @param slotType 号别类型 (如 "普通号", "专家号")
+     * @param jobTitle 医生职称 (如 "主任医师")
+     * @return 计算出的价格
+     */
+    private BigDecimal calculatePrice(String slotType, String jobTitle) {
+        switch (slotType) {
+            case "普通号":
+                return new BigDecimal("50.00");
+            case "专家号":
+                if ("主任医师".equals(jobTitle)) {
+                    return new BigDecimal("80.00");
+                } else if ("知名主任医师".equals(jobTitle)) {
+                    return new BigDecimal("100.00");
+                } else { // 默认为副主任医师或其他专家
+                    return new BigDecimal("60.00");
+                }
+            case "特需号": // 根据您的规则
+                return new BigDecimal("500.00");
+            case "国际医疗":
+                return new BigDecimal("1000.00");
+            default:
+                // 对于未知的号别类型，可以抛出异常或返回一个默认值，这里抛出异常更严谨
+                throw new IllegalArgumentException("不支持的号别类型: " + slotType);
         }
     }
 }
