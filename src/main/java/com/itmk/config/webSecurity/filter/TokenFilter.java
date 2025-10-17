@@ -45,8 +45,6 @@ public class TokenFilter extends OncePerRequestFilter {
     @Autowired
     private LoginFailureHandler loginFailureHandler; // 认证失败处理器
 
-    // Spring 提供的路径匹配器，专门用于处理带通配符的URL
-    private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     /**
      * 从 "Authorization" 请求头中提取 Bearer Token

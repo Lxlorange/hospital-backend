@@ -139,6 +139,7 @@ public class SpringSecurityConfig {
                                 // 配置不需要认证即可访问的白名单接口
                                 .requestMatchers("/api/sysUser/getImage", "/api/sysUser/login","/api/upload/uploadImage","/images/**","/wxapi/allApi/**").permitAll()
                         // 其他所有请求都需要认证
+                        .anyRequest().authenticated()
                 )
 
                 // 指定查询用户信息的实现类
