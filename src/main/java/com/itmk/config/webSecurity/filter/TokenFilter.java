@@ -107,11 +107,7 @@ public class TokenFilter extends OncePerRequestFilter {
             // 获取请求的URL
             String uri = request.getRequestURI();
 
-            // 使用 AntPathMatcher 来检查请求的URI是否匹配任何一个白名单模式
-            boolean isIgnored = ignoreUrl.stream().anyMatch(pattern -> antPathMatcher.match(pattern.trim(), uri));
-
-            // 如果请求不在白名单内，则进行token验证
-            if (!isIgnored) {
+            if(!ignoreUrl.contains(uri) && !uri.contains("/images/") && !uri.startsWith("/wxapi/allApi/")){
                 validateToken(request);
             }
         }catch (AuthenticationException e){
