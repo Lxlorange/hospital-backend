@@ -10,13 +10,9 @@ import com.itmk.netSystem.doctor.service.DoctorUpdateRequestService;
 import com.itmk.netSystem.userWeb.entity.SysUser;
 import com.itmk.netSystem.userWeb.service.userWebService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 医生信息更新申请管理控制器
@@ -29,7 +25,7 @@ public class DoctorUpdateRequestController {
     private DoctorUpdateRequestService doctorUpdateRequestService;
 
     @Autowired
-    private userWebService sysUserService;
+    private userWebService userWebService;
 
     /**
      * 获取待审核的医生信息更新申请列表
@@ -48,7 +44,7 @@ public class DoctorUpdateRequestController {
         String username = authentication.getName();
         QueryWrapper<SysUser> userQuery = new QueryWrapper<>();
         userQuery.lambda().eq(SysUser::getUsername, username);
-        SysUser currentUser = sysUserService.getOne(userQuery);
+        SysUser currentUser = userWebService.getOne(userQuery);
         if (currentUser == null || !"1".equals(currentUser.getIsAdmin())) {
             return ResultUtils.error("无权限访问,请联系管理员!");
         }
@@ -80,7 +76,7 @@ public class DoctorUpdateRequestController {
         String username = authentication.getName();
         QueryWrapper<SysUser> userQuery = new QueryWrapper<>();
         userQuery.lambda().eq(SysUser::getUsername, username);
-        SysUser currentUser = sysUserService.getOne(userQuery);
+        SysUser currentUser = userWebService.getOne(userQuery);
         if (currentUser == null || !"1".equals(currentUser.getIsAdmin())) {
             return ResultUtils.error("无权限访问,请联系管理员!");
         }
@@ -108,7 +104,7 @@ public class DoctorUpdateRequestController {
         String username = authentication.getName();
         QueryWrapper<SysUser> userQuery = new QueryWrapper<>();
         userQuery.lambda().eq(SysUser::getUsername, username);
-        SysUser reviewer = sysUserService.getOne(userQuery);
+        SysUser reviewer = userWebService.getOne(userQuery);
         if (reviewer == null || !"1".equals(reviewer.getIsAdmin())) {
             return ResultUtils.error("无权限访问,请联系管理员!");
         }
@@ -136,7 +132,7 @@ public class DoctorUpdateRequestController {
 
         QueryWrapper<SysUser> userQuery = new QueryWrapper<>();
         userQuery.lambda().eq(SysUser::getUsername, username);
-        SysUser currentUser = sysUserService.getOne(userQuery);
+        SysUser currentUser = userWebService.getOne(userQuery);
         if (currentUser == null) {
             return ResultUtils.error("用户不存在");
         }

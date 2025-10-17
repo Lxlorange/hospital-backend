@@ -24,7 +24,7 @@ import com.itmk.netSystem.doctor.entity.DoctorUpdateRequest;
 public class DoctorProfileServiceImpl extends ServiceImpl<DoctorProfileMapper, DoctorProfileVo> implements DoctorProfileService {
 
     @Autowired
-    private userWebService sysUserService;
+    private userWebService userWebService;
 
     @Override
     public DoctorProfileVo getDoctorProfile(Long doctorId) {
@@ -34,7 +34,7 @@ public class DoctorProfileServiceImpl extends ServiceImpl<DoctorProfileMapper, D
                 .leftJoin(Department.class, Department::getDeptId, SysUser::getDeptId)
                 .eq(SysUser::getUserId, doctorId);
 
-        SysUser sysUser = sysUserService.getOne(query);
+        SysUser sysUser = userWebService.getOne(query);
         if (sysUser == null) {
             return null;
         }
@@ -49,7 +49,7 @@ public class DoctorProfileServiceImpl extends ServiceImpl<DoctorProfileMapper, D
     public boolean updateDoctorProfile(DoctorProfileVo doctorProfileVo) {
         SysUser sysUser = new SysUser();
         BeanUtils.copyProperties(doctorProfileVo, sysUser);
-        return sysUserService.updateById(sysUser);
+        return userWebService.updateById(sysUser);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class DoctorProfileServiceImpl extends ServiceImpl<DoctorProfileMapper, D
         
         QueryWrapper<SysUser> query = new QueryWrapper<>();
         query.lambda().eq(SysUser::getUsername, username);
-        SysUser sysUser = sysUserService.getOne(query);
+        SysUser sysUser = userWebService.getOne(query);
         
         if (sysUser == null) {
             return null;
@@ -76,7 +76,7 @@ public class DoctorProfileServiceImpl extends ServiceImpl<DoctorProfileMapper, D
         
         QueryWrapper<SysUser> query = new QueryWrapper<>();
         query.lambda().eq(SysUser::getUsername, username);
-        SysUser currentUser = sysUserService.getOne(query);
+        SysUser currentUser = userWebService.getOne(query);
         
         if (currentUser == null) {
             return false;
@@ -91,7 +91,7 @@ public class DoctorProfileServiceImpl extends ServiceImpl<DoctorProfileMapper, D
 
         SysUser sysUser = new SysUser();
         BeanUtils.copyProperties(doctorProfileVo, sysUser);
-        return sysUserService.updateById(sysUser);
+        return userWebService.updateById(sysUser);
     }
     
     @Autowired
@@ -105,7 +105,7 @@ public class DoctorProfileServiceImpl extends ServiceImpl<DoctorProfileMapper, D
         
         QueryWrapper<SysUser> query = new QueryWrapper<>();
         query.lambda().eq(SysUser::getUsername, username);
-        SysUser currentUser = sysUserService.getOne(query);
+        SysUser currentUser = userWebService.getOne(query);
         
         if (currentUser == null) {
             return false;

@@ -2,14 +2,12 @@ package com.itmk.netSystem.doctor.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.itmk.netSystem.doctor.entity.DoctorProfileVo;
 import com.itmk.netSystem.doctor.entity.DoctorUpdateRequest;
 import com.itmk.netSystem.doctor.mapper.DoctorUpdateRequestMapper;
 import com.itmk.netSystem.doctor.service.DoctorProfileService;
 import com.itmk.netSystem.doctor.service.DoctorUpdateRequestService;
 import com.itmk.netSystem.userWeb.entity.SysUser;
 import com.itmk.netSystem.userWeb.service.userWebService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +21,7 @@ import java.util.Date;
 public class DoctorUpdateRequestServiceImpl extends ServiceImpl<DoctorUpdateRequestMapper, DoctorUpdateRequest> implements DoctorUpdateRequestService {
 
     @Autowired
-    private userWebService sysUserService;
+    private userWebService userWebService;
     
     @Autowired
     private DoctorProfileService doctorProfileService;
@@ -84,7 +82,7 @@ public class DoctorUpdateRequestServiceImpl extends ServiceImpl<DoctorUpdateRequ
             sysUser.setPrice(request.getPrice());
             sysUser.setUpdateTime(new Date());
             
-            return sysUserService.updateById(sysUser);
+            return userWebService.updateById(sysUser);
         }
         
         return updated;

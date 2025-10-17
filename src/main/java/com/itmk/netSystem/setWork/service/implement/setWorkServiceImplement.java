@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-//import com.itmk.web.phone.entity.DoctorDetailParm;
+import com.itmk.netSystem.phone.entity.DoctorDetailParm;
 import org.springframework.stereotype.Service;
 
 
@@ -24,10 +24,10 @@ public class setWorkServiceImplement extends ServiceImpl<setWorkMapper, Schedule
         return this.baseMapper.getList(page,parm);
     }
 
-    /*@Override
+    @Override
     public List<ScheduleDetail> selectById(DoctorDetailParm doctorDetailParm) {
         return this.baseMapper.selectById(doctorDetailParm);
-    }*/
+    }
 
 
 
