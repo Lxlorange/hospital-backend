@@ -35,7 +35,7 @@ import java.util.Map;
 public class TokenFilter extends OncePerRequestFilter {
 
     // 忽略Token校验的URL列表
-    @Value("${ignore.url}")
+    @Value("#{'${ignore.url}'.split(',')}")
     private List<String> ignoreUrl = Collections.emptyList();
 
     @Autowired

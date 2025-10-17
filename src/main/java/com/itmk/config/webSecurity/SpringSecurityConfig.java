@@ -121,61 +121,34 @@ public class SpringSecurityConfig {
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        // 1. 将所有白名单路径合并到一个数组中
-        String[] permittedUrls = {
-                // 您自己的业务白名单
-                "/api/sysUser/getImage",
-                "/api/sysUser/login",
-                "/api/upload/uploadImage",
-                "/images/**",
-                "/wxapi/allApi/**",
-
-                // API文档和静态资源白名单
-                "/swagger-ui.html",
-                "/swagger-ui/**",
-                "/swagger-resources/**",
-                "/v3/api-docs/**",
-                "/webjars/**",
-                "/doc.html",
-                "/favicon.ico"
-        };
-
-        // 2. 配置安全规则链
-        http
-                // 禁用CSRF
+        // 配置JWT令牌校验过滤器，在 UsernamePasswordAuthenticationFilter 之前执行
+        http.addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
+                // 禁用CSRF和CORS (跨域处理)
                 .csrf(AbstractHttpConfigurer::disable)
 
                 // 启用CORS，使用我们上面定义的 corsConfigurationSource Bean
                 .cors(Customizer.withDefaults())
+                // 允许Iframe嵌套
+                .headers((headers) -> headers.frameOptions((HeadersConfigurer.FrameOptionsConfig::disable)))
 
                 // 设置为无状态session管理
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 配置请求授权规则
-                .authorizeHttpRequests(authorize -> authorize
-                        // 对我们合并后的白名单数组中的所有路径，允许任何人访问
-                        .requestMatchers(permittedUrls).permitAll()
-
-                        // 除白名单外，其他所有请求都需要经过身份认证
-                        .anyRequest().authenticated()
+                // 鉴权配置
+                .authorizeHttpRequests((authorized ) ->authorized
+                                // 配置不需要认证即可访问的白名单接口
+                                .requestMatchers("/api/sysUser/getImage", "/api/sysUser/login","/api/upload/uploadImage","/images/**","/wxapi/allApi/**").permitAll()
+                        // 其他所有请求都需要认证
                 )
 
-                // 配置自定义异常处理器
-                .exceptionHandling(exceptions -> exceptions
-                        // 处理认证入口点异常（匿名用户访问需要认证的资源）
-                        .authenticationEntryPoint(loginFailureHandler)
-                        // 处理访问被拒绝异常（已认证用户访问其无权限的资源）
-                        .accessDeniedHandler(customAccessHandler)
-                )
-
-                // 将您的自定义Token过滤器添加到过滤器链中，确保它在标准的认证过滤器之前执行
-                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
-
-                // 允许页面在Iframe中展示（例如，某些内部系统可能需要）
-                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
-
-        // 3. 构建并返回配置好的SecurityFilterChain
+                // 指定查询用户信息的实现类
+                .userDetailsService(customerService)
+                // 自定义异常处理
+                .exceptionHandling((exceptionHandling) -> exceptionHandling
+                        .authenticationEntryPoint(loginFailureHandler) // 匿名用户访问无权限
+                        .accessDeniedHandler(customAccessHandler)  // 已认证用户但无权限
+                );
+        // 构建并返回SecurityFilterChain
         return http.build();
     }
     }
