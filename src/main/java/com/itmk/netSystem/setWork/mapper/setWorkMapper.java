@@ -2,7 +2,7 @@ package com.itmk.netSystem.setWork.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.itmk.netSystem.phone.entity.DoctorDetailParm;
+import com.itmk.netSystem.phone.entity.DoctorInformationNum;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 import com.itmk.netSystem.setWork.entity.setWorkPage;
 import org.apache.ibatis.annotations.Param;
@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface setWorkMapper extends BaseMapper<ScheduleDetail> {
     IPage<ScheduleDetail> getList(IPage<ScheduleDetail> page, @Param("parm") setWorkPage parm);
-    List<ScheduleDetail> selectById(@Param("parm") DoctorDetailParm doctorDetailParm);
+    List<ScheduleDetail> selectById(@Param("parm") DoctorInformationNum doctorInformationNum);
 
     /**
      * 批量取消排班 (通过将可预约数设为0).

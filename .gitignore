@@ -1,9 +1,8 @@
 target
 .idea/
-src/main/java/com/itmk/netSystem/userPhone
+src/main/java/com/itmk/netSystem/userPatientPhone
 src/main/java/com/itmk/netSystem/phone
-src/main/java/com/itmk/netSystem/patientOrder
-src/main/java/com/itmk/netSystem/order
+src/main/java/com/itmk/netSystem/see
 src/main/java/com/itmk/netSystem/advice
 src/main/java/com/itmk/netSystem/plat
-src/main/java/com/itmk/netSystem/userPatient
+src/main/java/com/itmk/netSystem/treatpatient

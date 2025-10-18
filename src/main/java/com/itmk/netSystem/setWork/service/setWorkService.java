@@ -4,14 +4,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 import com.itmk.netSystem.setWork.entity.setWorkPage;
-import com.itmk.netSystem.phone.entity.DoctorDetailParm;
+import com.itmk.netSystem.phone.entity.DoctorInformationNum;
 
 import java.util.List;
 
 
 public interface setWorkService extends IService<ScheduleDetail> {
     IPage<ScheduleDetail> getList(setWorkPage parm);
-    List<ScheduleDetail> selectById(DoctorDetailParm doctorDetailParm);
+    List<ScheduleDetail> selectById(DoctorInformationNum doctorInformationNum);
     /**
      * 根据医生ID和日期范围查询排班列表
      * @param doctorId  医生ID
