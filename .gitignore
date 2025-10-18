@@ -1,6 +1,5 @@
 target
 .idea/
-src/main/java/com/itmk/netSystem/userPatientPhone
 src/main/java/com/itmk/netSystem/phone
 src/main/java/com/itmk/netSystem/advice
 src/main/java/com/itmk/netSystem/plat
