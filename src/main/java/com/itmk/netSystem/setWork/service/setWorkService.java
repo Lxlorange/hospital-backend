@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 import com.itmk.netSystem.setWork.entity.setWorkPage;
-import com.itmk.netSystem.phone.entity.DoctorInformationNum;
+import com.itmk.netSystem.phoneChat.entity.DoctorInformationNum;
 
 import java.util.List;
 

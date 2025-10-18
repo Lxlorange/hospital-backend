@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.itmk.netSystem.phone.entity.DoctorInformationNum;
+import com.itmk.netSystem.phoneChat.entity.DoctorInformationNum;
 import org.springframework.stereotype.Service;
 
 
