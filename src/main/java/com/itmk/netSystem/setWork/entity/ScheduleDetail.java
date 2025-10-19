@@ -33,11 +33,22 @@ public class ScheduleDetail implements Serializable {
      */
     private String levelName;
 
+    /**
+     * 可以用 0 表示上午，1 表示下午
+     */
+    private Integer timeSlot;
+
+    /**
+     * 挂号费
+     */
+    private Integer price;
+
     private Integer amount;
 
     private Integer lastAmount;
 
     private String type;
+
 
     // --- 非数据库字段，用于业务逻辑和数据传输 ---
 
@@ -47,13 +58,6 @@ public class ScheduleDetail implements Serializable {
     @TableField(exist = false)
     private String deptName;
 
-    /**
-     * 挂号价格 (非数据库字段)
-     * 该字段由业务逻辑根据 level_name 和医生信息动态计算并填充，用于返回给前端显示。
-     * 使用 @TableField(exist = false) 明确告诉MyBatis-Plus，这个字段不与数据库表中的任何列对应。
-     */
-    @TableField(exist = false)
-    private BigDecimal price;
 
 
     // --- 业务逻辑方法 ---
@@ -100,10 +104,6 @@ public class ScheduleDetail implements Serializable {
         return this;
     }
 
-    public ScheduleDetail price(BigDecimal price) {
-        this.price = price;
-        return this;
-    }
 
     public ScheduleDetail lastAmount(Integer lastAmount) {
         this.lastAmount = lastAmount;
