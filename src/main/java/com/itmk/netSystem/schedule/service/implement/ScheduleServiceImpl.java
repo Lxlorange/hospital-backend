@@ -28,8 +28,6 @@ public class ScheduleServiceImpl implements ScheduleService {
     // 注入新创建的四个Mapper
     @Autowired private ScheduleTemplateMapper templateMapper;
     @Autowired private TemplateSlotMapper templateSlotMapper;
-    @Autowired private ScheduleInstanceMapper instanceMapper;
-    @Autowired private InstanceSlotMapper instanceSlotMapper;
     @Autowired private setWorkMapper scheduleDetailMapper;
     @Autowired private userWebMapper SysUserMapper;
 
