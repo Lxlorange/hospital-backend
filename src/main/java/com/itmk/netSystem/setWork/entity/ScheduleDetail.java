@@ -51,6 +51,8 @@ public class ScheduleDetail implements Serializable {
     private String type;
 
 
+    // --- 非数据库字段，用于业务逻辑和数据传输 ---
+
     @TableField(exist = false)
     private Integer deptId;
 
