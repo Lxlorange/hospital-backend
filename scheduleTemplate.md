@@ -151,7 +151,7 @@
     -   `deptId` (`Long`, 可选): 按科室ID筛选。
     -   `doctorId` (`Long`, 可选): 按医生ID筛选。
 -   **请求体**: 无
--   **例**:http://localhost:8089/api/schedule/instance?startDate=2025-09-14&endDate=2025-10-01&doctorId=25
+-   **例**:http://localhost:8089/api/schedule/instance?startDate=2025-11-01&endDate=2025-11-07&doctorId=25
 -   **成功响应 (200 OK)**:
     ```json
     {

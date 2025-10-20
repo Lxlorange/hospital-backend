@@ -2,13 +2,11 @@ package com.itmk.netSystem.schedule.service;
 
 import com.itmk.netSystem.schedule.entity.ScheduleInstance;
 import com.itmk.netSystem.schedule.entity.ScheduleTemplate;
+import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 
 import java.util.List;
 import java.util.Map;
 
-/**
- * 新版排班（模板与实例）服务接口
- */
 public interface ScheduleService {
 
     /**
@@ -39,7 +37,7 @@ public interface ScheduleService {
      * @param doctorId 医生ID (可选)
      * @return 包含医生、科室、号源详情的排班实例列表
      */
-    List<ScheduleInstance> findInstances(String startDate, String endDate, Long deptId, Long doctorId);
+    public List<ScheduleDetail> findInstances(String startDate, String endDate, Long deptId, Long doctorId);
 
     /**
      * 3.5 更新排班实例状态（停诊/复诊）

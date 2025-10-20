@@ -2,6 +2,7 @@ package com.itmk.netSystem.setWork.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.yulichang.base.MPJBaseMapper;
 import com.itmk.netSystem.phoneChat.entity.DoctorInformationNum;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 import com.itmk.netSystem.setWork.entity.setWorkPage;
@@ -10,7 +11,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 
-public interface setWorkMapper extends BaseMapper<ScheduleDetail> {
+public interface setWorkMapper extends MPJBaseMapper<ScheduleDetail> {
     IPage<ScheduleDetail> getList(IPage<ScheduleDetail> page, @Param("parm") setWorkPage parm);
     List<ScheduleDetail> selectById(@Param("parm") DoctorInformationNum doctorInformationNum);
 

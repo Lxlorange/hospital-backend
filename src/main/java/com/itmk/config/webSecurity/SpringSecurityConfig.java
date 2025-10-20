@@ -137,7 +137,7 @@ public class SpringSecurityConfig {
                 // 鉴权配置
                 .authorizeHttpRequests((authorized ) ->authorized
                                 // 配置不需要认证即可访问的白名单接口
-                                .requestMatchers("/api/sysUser/getImage", "/api/sysUser/login","/api/upload/uploadImage","/images/**","/wxapi/allApi/**").permitAll()
+                                .requestMatchers("/api/sysUser/getImage", "/api/sysUser/login","/api/upload/uploadImage","/images/**","/wxapi/allApi/**","/swagger-ui/**","/swagger-ui.html","/swagger-resources/**","/v3/api-docs","/v2/api-docs","/webjars/**","/api/sysUser/api-docs","/webjars","/doc.html","/favicon.ico").permitAll()
                         // 其他所有请求都需要认证
                         .anyRequest().authenticated()
                 )

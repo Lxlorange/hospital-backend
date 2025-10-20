@@ -3,6 +3,7 @@ package com.itmk.netSystem.schedule.controller;
 import com.itmk.netSystem.schedule.entity.ScheduleInstance;
 import com.itmk.netSystem.schedule.entity.ScheduleTemplate;
 import com.itmk.netSystem.schedule.service.ScheduleService;
+import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
 import io.swagger.annotations.Api;
@@ -52,7 +53,7 @@ public class ScheduleController {
             @ApiParam(value = "科室ID (可选)") @RequestParam(required = false) Long deptId,
             @ApiParam(value = "医生ID (可选)") @RequestParam(required = false) Long doctorId
     ) {
-        List<ScheduleInstance> data = scheduleService.findInstances(startDate, endDate, deptId, doctorId);
+        List<ScheduleDetail> data = scheduleService.findInstances(startDate, endDate, deptId, doctorId);
         return ResultUtils.success("查询成功", data);
     }
 

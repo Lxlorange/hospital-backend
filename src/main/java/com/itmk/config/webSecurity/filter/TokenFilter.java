@@ -105,11 +105,10 @@ public class TokenFilter extends OncePerRequestFilter {
             // 获取请求的URL
             String uri = request.getRequestURI();
 
-            if(!ignoreUrl.contains(uri) && !uri.contains("/images/") && !uri.startsWith("/wxapi/allApi/")){
+            if(!ignoreUrl.contains(uri) && !uri.contains("/images/") && !uri.startsWith("/wxapi/allApi/") && !uri.contains("/swagger-ui/**") && !uri.contains("/swagger-ui.html") && !uri.contains("/swagger-resources/**") && !uri.contains("/v3/api-docs") && !uri.contains("/v2/api-docs") && !uri.contains("/webjars/**") && !uri.contains("/api/sysUser/api-docs") && !uri.contains("/webjars") && !uri.contains("/doc.html") && !uri.contains("/favicon.ico")){
                 validateToken(request);
             }
         }catch (AuthenticationException e){
-            e.printStackTrace();
             // 认证失败，调用自定义失败处理器返回JSON
             loginFailureHandler.commence(request,response,e);
             return;

@@ -5,6 +5,8 @@ import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.itmk.netSystem.schedule.entity.*;
 import com.itmk.netSystem.schedule.mapper.*;
 import com.itmk.netSystem.schedule.service.ScheduleService;
+import com.itmk.netSystem.setWork.entity.ScheduleDetail;
+import com.itmk.netSystem.setWork.mapper.setWorkMapper;
 import com.itmk.netSystem.teamDepartment.entity.Department;
 import com.itmk.netSystem.userWeb.entity.SysUser;
 import com.itmk.netSystem.userWeb.mapper.userWebMapper;
@@ -14,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -26,6 +30,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Autowired private TemplateSlotMapper templateSlotMapper;
     @Autowired private ScheduleInstanceMapper instanceMapper;
     @Autowired private InstanceSlotMapper instanceSlotMapper;
+    @Autowired private setWorkMapper scheduleDetailMapper;
     @Autowired private userWebMapper SysUserMapper;
 
     // 注入用于关联查询的Mapper
@@ -112,81 +117,75 @@ public class ScheduleServiceImpl implements ScheduleService {
             allTemplates.stream()
                     .filter(t -> t.getDayOfWeek() == dayOfWeek)
                     .forEach(template -> {
-                        // 检查是否已存在排班实例，若存在则跳过
-                        boolean exists = instanceMapper.exists(new QueryWrapper<ScheduleInstance>()
-                                .eq("doctor_id", template.getDoctorId())
-                                .eq("schedule_date", currentDate)
-                                .eq("time_slot", template.getTimeSlot())
+                        List<TemplateSlot> templateSlots = templateSlotMapper.selectList(
+                                new QueryWrapper<TemplateSlot>().eq("template_id", template.getTemplateId())
                         );
 
-                        if (!exists) {
-                            ScheduleInstance instance = new ScheduleInstance();
-                            instance.setDoctorId(template.getDoctorId());
-                            instance.setScheduleDate(currentDate);
-                            instance.setTimeSlot(template.getTimeSlot());
-                            instance.setStatus(1); // 默认状态为“正常”
-                            instanceMapper.insert(instance);
-
-                            List<TemplateSlot> templateSlots = templateSlotMapper.selectList(
-                                    new QueryWrapper<TemplateSlot>().eq("template_id", template.getTemplateId())
+                        for (TemplateSlot ts : templateSlots) {
+                            boolean exists = scheduleDetailMapper.exists(new QueryWrapper<ScheduleDetail>()
+                                    .eq("doctor_id", template.getDoctorId())
+                                    .eq("times", currentDate)
+                                    .eq("time_slot", template.getTimeSlot())
+                                    .eq("level_name", ts.getSlotType())
                             );
-                            for (TemplateSlot ts : templateSlots) {
-                                InstanceSlot is = new InstanceSlot();
-                                is.setInstanceId(instance.getInstanceId());
-                                is.setSlotType(ts.getSlotType());
-                                is.setPrice(ts.getPrice());
-                                is.setTotalAmount(ts.getTotalAmount());
-                                is.setAvailableAmount(ts.getTotalAmount()); // 初始可用数等于总数
-                                instanceSlotMapper.insert(is);
+
+                            if (!exists) {
+                                SysUser doctor = sysUserMapper.selectById(template.getDoctorId());
+
+                                ScheduleDetail instance = new ScheduleDetail();
+                                instance.setDoctorId(template.getDoctorId().intValue());
+                                instance.setDoctorName(doctor != null ? doctor.getNickName() : "未知医生");
+                                instance.setTimes(currentDate);
+                                instance.setWeek(currentDate.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.CHINESE));
+
+                                instance.setTimeSlot(template.getTimeSlot());
+                                instance.setLevelName(ts.getSlotType());
+                                instance.setPrice(ts.getPrice());
+                                instance.setAmount(ts.getTotalAmount());
+                                instance.setLastAmount(ts.getTotalAmount());
+
+                                instance.setType("1");
+
+                                scheduleDetailMapper.insert(instance);
                             }
                         }
                     });
         }
     }
 
-    //根据条件在一段时间内查询排班实例
     @Override
-    public List<ScheduleInstance> findInstances(String startDate, String endDate, Long deptId, Long doctorId) {
-        // 使用 mybatis-plus-join 进行连表查询
-        MPJLambdaWrapper<ScheduleInstance> queryWrapper = new MPJLambdaWrapper<>();
-        queryWrapper.between(ScheduleInstance::getScheduleDate, startDate, endDate)
-                .leftJoin(SysUser.class, SysUser::getUserId, ScheduleInstance::getDoctorId)
+    public List<ScheduleDetail> findInstances(String startDate, String endDate, Long deptId, Long doctorId) {
+        // 直接查询 schedule_detail 表，并进行连表
+        MPJLambdaWrapper<ScheduleDetail> queryWrapper = new MPJLambdaWrapper<>();
+        queryWrapper.between(ScheduleDetail::getTimes, startDate, endDate)
+                .leftJoin(SysUser.class, SysUser::getUserId, ScheduleDetail::getDoctorId)
                 .leftJoin(Department.class, Department::getDeptId, SysUser::getDeptId)
-                .selectAll(ScheduleInstance.class)
-                // 连表查询医生和科室名称，并设置别名以匹配实体类的临时字段
-                .selectAs(SysUser::getNickName, ScheduleInstance::getDoctorName)
-                .selectAs(Department::getDeptName, ScheduleInstance::getDepartmentName);
+                .selectAll(ScheduleDetail.class)
+                .selectAs(Department::getDeptName, ScheduleDetail::getDeptName);
 
         if (doctorId != null) {
-            queryWrapper.eq(ScheduleInstance::getDoctorId, doctorId);
+            queryWrapper.eq(ScheduleDetail::getDoctorId, doctorId);
         }
         if (deptId != null) {
             queryWrapper.eq(SysUser::getDeptId, deptId);
         }
 
-        // 先查询出主实例列表
-        List<ScheduleInstance> instances = instanceMapper.selectJoinList(ScheduleInstance.class, queryWrapper);
-
-        // 遍历查询每个实例的号源详情 (N+1查询，数据量大时建议优化)
-        instances.forEach(instance -> {
-            List<InstanceSlot> slots = instanceSlotMapper.selectList(
-                    new QueryWrapper<InstanceSlot>().eq("instance_id", instance.getInstanceId())
-            );
-            instance.setSlots(slots);
-        });
-
-        return instances;
+        return scheduleDetailMapper.selectJoinList(ScheduleDetail.class, queryWrapper);
     }
 
     //更新排班实例状态
     @Override
     public void updateInstanceStatus(Long instanceId, Map<String, Integer> request) {
+        // 前端传来的 status: 1=正常, 2=停诊
+        // 需要将其转换为后端的 type: '1'=上班, '0'=休息
         Integer status = request.get("status");
         if (status != null) {
-            ScheduleInstance instance = new ScheduleInstance();
-            instance.setInstanceId(instanceId);
-            instance.setStatus(status);
-            instanceMapper.updateById(instance);
+            ScheduleDetail detail = new ScheduleDetail();
+            detail.setScheduleId(instanceId.intValue());
+            String typeValue = status == 1 ? "1" : "0";
+            detail.setType(typeValue);
+
+            scheduleDetailMapper.updateById(detail);
         }
     }
 

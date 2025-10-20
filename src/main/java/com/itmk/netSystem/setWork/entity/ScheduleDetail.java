@@ -7,39 +7,49 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate; // 建议使用 LocalDate 来映射 DATE 类型的数据库字段
 
 @Data
 @TableName("schedule_detail")
 public class ScheduleDetail implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @TableId(type = IdType.AUTO)
+    @TableId(value = "schedule_id", type = IdType.AUTO)
     private Integer scheduleId;
 
     private Integer doctorId;
-
     private String doctorName;
 
-    private String times;
+    // 建议的修改：将 times 字段类型改为 LocalDate 以匹配数据库的 DATE 类型
+    private LocalDate times;
 
     private String week;
-
     private Integer witchWeek;
 
-    // --- 主要修改点 ---
+
+
+
     /**
-     * 号别名称 (数据库字段)
-     * 用于存储 "普通号", "专家号" 等, 这是计算价格的依据。
+     * 时段 (0=上午, 1=下午) (新增)
+     */
+    private Integer timeSlot;
+
+    /**
+     * 号别类型 (已存在)
      */
     private String levelName;
 
+    /**
+     * 挂号价格 (修改：现在是数据库字段)
+     * 注意：数据库中 price 字段类型应为 DECIMAL(10,2)，而不是 INT
+     */
+    private BigDecimal price;
+
+
     private Integer amount;
-
     private Integer lastAmount;
-
     private String type;
 
-    // --- 非数据库字段，用于业务逻辑和数据传输 ---
 
     @TableField(exist = false)
     private Integer deptId;
@@ -47,29 +57,11 @@ public class ScheduleDetail implements Serializable {
     @TableField(exist = false)
     private String deptName;
 
-    /**
-     * 挂号价格 (非数据库字段)
-     * 该字段由业务逻辑根据 level_name 和医生信息动态计算并填充，用于返回给前端显示。
-     * 使用 @TableField(exist = false) 明确告诉MyBatis-Plus，这个字段不与数据库表中的任何列对应。
-     */
-    @TableField(exist = false)
-    private BigDecimal price;
 
 
-    // --- 业务逻辑方法 ---
-
-    /**
-     * 判断当前排班是否已挂满
-     * @return 如果剩余号源小于或等于0，则返回 true；否则返回 false。
-     */
     public boolean isFullyBooked() {
         return this.lastAmount != null && this.lastAmount <= 0;
     }
-
-    /**
-     * 减少一个剩余号源
-     * 如果号源充足，则减少一个并返回true；否则返回false。
-     */
     public boolean decreaseLastAmount() {
         if (this.lastAmount != null && this.lastAmount > 0) {
             this.lastAmount--;
@@ -78,35 +70,36 @@ public class ScheduleDetail implements Serializable {
         return false;
     }
 
-    // --- Fluent Setters for chaining ---
-
     public ScheduleDetail scheduleId(Integer scheduleId) {
         this.scheduleId = scheduleId;
         return this;
     }
-
     public ScheduleDetail doctorId(Integer doctorId) {
         this.doctorId = doctorId;
         return this;
     }
-
     public ScheduleDetail doctorName(String doctorName) {
         this.doctorName = doctorName;
         return this;
     }
-
     public ScheduleDetail levelName(String levelName) {
         this.levelName = levelName;
         return this;
     }
-
     public ScheduleDetail price(BigDecimal price) {
         this.price = price;
         return this;
     }
-
     public ScheduleDetail lastAmount(Integer lastAmount) {
         this.lastAmount = lastAmount;
+        return this;
+    }
+    public ScheduleDetail timeSlot(Integer timeSlot) {
+        this.timeSlot = timeSlot;
+        return this;
+    }
+    public ScheduleDetail type(String type) {
+        this.type = type;
         return this;
     }
 }
