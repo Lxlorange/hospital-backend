@@ -1,9 +1,9 @@
 package com.itmk.netSystem.phoneChat.controller;
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import com.itmk.tool.Utils;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
 import com.itmk.netSystem.teamDepartment.entity.Department;
@@ -30,11 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 //import com.itmk.netSystem.advice.entity.Suggest;
 //import com.itmk.netSystem.advice.service.AdviceService;
@@ -62,6 +61,8 @@ public class PhoneProjectController {
     private CallService callService;
     @Autowired
     private SeeService seeService;
+    @Autowired
+    private Utils jwtUtils;
     //@Autowired
     //private AdviceService adviceService;
 
@@ -343,51 +344,11 @@ public class PhoneProjectController {
         return ResultUtils.success("成功",list);
     }
 
-    /**
-     * @description: 处理用户取消预约的请求，这是一个事务性操作。
-     * @param makeOrder 包含预约ID的预约对象
-     * @return 返回操作成功或失败的结果
-     */
-    @Transactional
-    @PostMapping("/cancelOrder")
-    public ResultVo cancelOrder(@RequestBody MakeOrder makeOrder){
-        // 查询最新的订单信息，防止重复取消
-        MakeOrder order = callService.getById(makeOrder.getMakeId());
-        if(order.getStatus().equals("2")){
-            return ResultUtils.error("订单已经取消，不要重复操作!");
-        }
-        // 将订单状态更新为"2"（已取消）
-        makeOrder.setStatus("2");
-        callService.updateById(makeOrder);
-        // 将对应的医生排班号源数量加一
-        setWorkService.addCount(order.getScheduleId());
-        return ResultUtils.success("成功");
-    }
 
 
 
-    /**
-     * @description: 分页查询指定用户的预约挂号列表。
-     * @param parm 包含用户ID和分页信息的参数对象
-     * @return 返回包含预约记录、医生、科室及就诊人信息的分页结果
-     */
-    @GetMapping("/getOrderList")
-    public ResultVo getOrderList(CallPage parm){
-        IPage<MakeOrder> page = new Page<>(parm.getCurrentPage(),parm.getPageSize());
-        // 构造多表连接查询，关联就诊人、医生和科室表
-        MPJLambdaWrapper<MakeOrder> query = new MPJLambdaWrapper<>();
-        query.selectAll(MakeOrder.class)
-                .select(SysUser::getNickName)
-                .select(Department::getDeptName)
-                .select(VisitUser::getVisitname)
-                .leftJoin(VisitUser.class,VisitUser::getVisitId,MakeOrder::getVisitUserId)
-                .leftJoin(SysUser.class,SysUser::getUserId,MakeOrder::getDoctorId)
-                .leftJoin(Department.class,Department::getDeptId,SysUser::getDeptId)
-                .eq(MakeOrder::getUserId,parm.getUserId())
-                .orderByDesc(MakeOrder::getCreateTime);
-        IPage<MakeOrder> list = callService.page(page, query);
-        return ResultUtils.success("成功",list);
-    }
+
+
 
     /**
      * @description: 根据身份证号查询就诊人是否存在，用于添加就诊人前的校验。
@@ -520,27 +481,108 @@ public class PhoneProjectController {
     @PostMapping("/makeOrderAdd")
     @Transactional
     public ResultVo makeOrderAdd(@RequestBody MakeOrder makeOrde){
-        // 检查所选的排班是否还有剩余号源
+        // 从数据库查询排班信息，并使用行锁防止并发问题
+        // 使用 .last("for update") 会在事务期间锁定该行，防止其他事务读取或修改
         QueryWrapper<ScheduleDetail> query = new QueryWrapper<>();
-        query.lambda().eq(ScheduleDetail::getScheduleId,makeOrde.getScheduleId());
-        ScheduleDetail one = setWorkService.getOne(query);
-        if(one.getLastAmount() <=0){
-            return ResultUtils.error("今日号数已经被预约完，明天再来!");
+        query.lambda().eq(ScheduleDetail::getScheduleId, makeOrde.getScheduleId()).last("for update");
+        ScheduleDetail schedule = setWorkService.getOne(query);
+
+        // 校验排班是否存在
+        if (schedule == null) {
+            return ResultUtils.error("无效的排班信息!");
         }
+
+        // 检查剩余号源
+        if(schedule.getLastAmount() <= 0){
+            return ResultUtils.error("今日号数已经被预约完，请选择其他排班!");
+        }
+
+        // 价格校验：以后端数据库中的价格为准，防止前端篡改
+        makeOrde.setPrice(schedule.getPrice());
+
+        // 设置订单初始状态
         makeOrde.setCreateTime(new Date());
-        makeOrde.setStatus("1"); // 设置状态为 "1": 已预约
-        makeOrde.setHasVisit("0"); // 设置就诊状态为 "0": 未就诊
-        makeOrde.setHasCall("0"); // 设置叫号状态为 "0": 未叫号
+        makeOrde.setStatus("1"); // 状态 "1": 已预约
+        makeOrde.setHasVisit("0"); // 就诊状态 "0": 未就诊
+        makeOrde.setHasCall("0"); // 叫号状态 "0": 未叫号
+
+        // 保存订单并更新号源
         if(callService.save(makeOrde)){
             // 预约成功后，对应排班的剩余号源数量减一
             setWorkService.subCount(makeOrde.getScheduleId());
-            return ResultUtils.success("成功!");
+            return ResultUtils.success("预约成功!");
         }
-        return ResultUtils.error("失败!");
+
+        return ResultUtils.error("预约失败，请稍后重试!");
     }
 
+    /**
+     * @description: 处理用户取消预约的请求，这是一个事务性操作。
+     * @param makeOrder 包含预约ID的预约对象
+     * @return 返回操作成功或失败的结果
+     */
+    @Transactional
+    @PostMapping("/cancelOrder")
+    public ResultVo cancelOrder(@RequestBody MakeOrder makeOrder){
+        // 查询最新的订单信息，确保数据准确性
+        MakeOrder order = callService.getById(makeOrder.getMakeId());
 
+        if (order == null) {
+            return ResultUtils.error("订单不存在!");
+        }
 
+        // 防止重复取消
+        if("2".equals(order.getStatus())){
+            return ResultUtils.error("订单已经取消，请勿重复操作!");
+        }
+
+        // 取消时间限制：就诊前一天（含当天）不允许取消
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate appointmentDate = LocalDate.parse(order.getTimes(), formatter);
+            LocalDate today = LocalDate.now();
+
+            // 如果预约日期在明天之前（即今天或过去），则不允许取消
+            if (appointmentDate.isBefore(today.plusDays(1))) {
+                return ResultUtils.error("已临近就诊时间（少于1天），无法取消预约!");
+            }
+        } catch (Exception e) {
+            // 日期格式解析失败，返回错误
+            return ResultUtils.error("系统错误，无法处理您的取消请求。");
+        }
+
+        // 5. 更新订单状态
+        order.setStatus("2"); // 将订单状态更新为"2"（已取消）
+        callService.updateById(order);
+
+        // 6. 恢复号源
+        setWorkService.addCount(order.getScheduleId());
+
+        return ResultUtils.success("取消成功");
+    }
+
+    /**
+     * @description: 分页查询指定用户的预约挂号列表。
+     * @param parm 包含用户ID和分页信息的参数对象
+     * @return 返回包含预约记录、医生、科室及就诊人信息的分页结果
+     */
+    @GetMapping("/getOrderList")
+    public ResultVo getOrderList(CallPage parm){
+        IPage<MakeOrder> page = new Page<>(parm.getCurrentPage(),parm.getPageSize());
+        // 构造多表连接查询，关联就诊人、医生和科室表
+        MPJLambdaWrapper<MakeOrder> query = new MPJLambdaWrapper<>();
+        query.selectAll(MakeOrder.class)
+                .select(SysUser::getNickName)
+                .select(Department::getDeptName)
+                .select(VisitUser::getVisitname)
+                .leftJoin(VisitUser.class,VisitUser::getVisitId,MakeOrder::getVisitUserId)
+                .leftJoin(SysUser.class,SysUser::getUserId,MakeOrder::getDoctorId)
+                .leftJoin(Department.class,Department::getDeptId,SysUser::getDeptId)
+                .eq(MakeOrder::getUserId,parm.getUserId())
+                .orderByDesc(MakeOrder::getCreateTime);
+        IPage<MakeOrder> list = callService.page(page, query);
+        return ResultUtils.success("成功",list);
+    }
 
     /**
      * @description: 为指定用户账户添加一个新的就诊人信息。
@@ -630,6 +672,12 @@ public class PhoneProjectController {
         if(!user.isStatus()){
             return ResultUtils.error("账号被停用，请联系管理员！");
         }
+        Map<String, String> map = new HashMap<>();
+        map.put("userId", String.valueOf(user.getUserId()));
+        map.put("username", user.getUserName());
+        String token = jwtUtils.generateToken(map); // 调用项目中已有的jwtUtils实例
+
+        System.out.println("🎉 小程序登录成功，为用户 " + user.getUserName() + " 生成的Token是: " + token);
         Login vo = new Login();
         vo.setUserId(user.getUserId());
         return ResultUtils.success("成功!",vo);
