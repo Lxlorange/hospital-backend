@@ -1,7 +1,7 @@
 package com.itmk.netSystem.call.entity;
 import lombok.Data;
 
- 
+
 @Data
 public class CallPage {
 
@@ -13,6 +13,15 @@ public class CallPage {
     private Long doctorId;
     private String name;
     private String timesArea;
+    private String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public boolean hasNameFilter() {
         return this.name != null && !this.name.isEmpty();

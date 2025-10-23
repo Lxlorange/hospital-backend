@@ -28,6 +28,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -540,7 +541,7 @@ public class PhoneProjectController {
             return ResultUtils.error("订单不存在!");
         }
 
-        // 防止重复取消
+        // 状态校验：防止重复取消
         if("2".equals(order.getStatus())){
             return ResultUtils.error("订单已经取消，请勿重复操作!");
         }
@@ -551,20 +552,19 @@ public class PhoneProjectController {
             LocalDate appointmentDate = LocalDate.parse(order.getTimes(), formatter);
             LocalDate today = LocalDate.now();
 
-            // 如果预约日期在明天之前（即今天或过去），则不允许取消
             if (appointmentDate.isBefore(today.plusDays(1))) {
                 return ResultUtils.error("已临近就诊时间（少于1天），无法取消预约!");
             }
         } catch (Exception e) {
-            // 日期格式解析失败，返回错误
+            e.printStackTrace();
             return ResultUtils.error("系统错误，无法处理您的取消请求。");
         }
 
-        // 5. 更新订单状态
-        order.setStatus("2"); // 将订单状态更新为"2"（已取消）
+        // 更新订单状态
+        order.setStatus("2"); 
         callService.updateById(order);
 
-        // 6. 恢复号源
+        // 恢复号源
         setWorkService.addCount(order.getScheduleId());
 
         return ResultUtils.success("取消成功");
@@ -577,20 +577,28 @@ public class PhoneProjectController {
      */
     @GetMapping("/getOrderList")
     public ResultVo getOrderList(CallPage parm){
-        IPage<MakeOrder> page = new Page<>(parm.getCurrentPage(),parm.getPageSize());
-        // 构造多表连接查询，关联就诊人、医生和科室表
+        IPage<MakeOrder> page = new Page<>(parm.getCurrentPage(), parm.getPageSize());
+
+        // 构造多表连接查询
         MPJLambdaWrapper<MakeOrder> query = new MPJLambdaWrapper<>();
         query.selectAll(MakeOrder.class)
                 .select(SysUser::getNickName)
                 .select(Department::getDeptName)
                 .select(VisitUser::getVisitname)
-                .leftJoin(VisitUser.class,VisitUser::getVisitId,MakeOrder::getVisitUserId)
-                .leftJoin(SysUser.class,SysUser::getUserId,MakeOrder::getDoctorId)
-                .leftJoin(Department.class,Department::getDeptId,SysUser::getDeptId)
-                .eq(MakeOrder::getUserId,parm.getUserId())
+                .leftJoin(VisitUser.class, VisitUser::getVisitId, MakeOrder::getVisitUserId)
+                .leftJoin(SysUser.class, SysUser::getUserId, MakeOrder::getDoctorId)
+                .leftJoin(Department.class, Department::getDeptId, SysUser::getDeptId)
+                // 直接使用前端传入的userId进行查询
+                .eq(MakeOrder::getUserId, parm.getUserId())
                 .orderByDesc(MakeOrder::getCreateTime);
+
+        // 根据状态筛选
+        if (StringUtils.hasText(parm.getStatus())) {
+            query.eq(MakeOrder::getStatus, parm.getStatus());
+        }
+
         IPage<MakeOrder> list = callService.page(page, query);
-        return ResultUtils.success("成功",list);
+        return ResultUtils.success("查询成功", list);
     }
 
     /**

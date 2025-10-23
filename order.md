@@ -2,7 +2,7 @@
 
 本文档提供创建预约、取消预约和查询预约列表三个核心接口的调用说明，方便前端进行功能测试。
 
-**接口通用前缀**: `http://localhost:8089/wxapi/allapi`
+**接口通用前缀**: `http://localhost:8089/wxapi/allApi`
 
 ---
 
@@ -11,7 +11,7 @@
 ### 接口描述
 用户选择某个医生的排班后，调用此接口创建一个新的预约订单。
 
-- **接口路径**: `http://localhost:8089/wxapi/allapi/makeOrderAdd`
+- **接口路径**: `http://localhost:8089/wxapi/allApi/makeOrderAdd`
 - **请求方式**: `POST`
 - **Content-Type**: `application/json`
 
@@ -88,5 +88,47 @@
       "data": null
     }
     ```
+
+---
+
+## 2. 取消预约订单
+
+### 接口描述
+对一个“已预约”状态的订单进行取消操作。
+
+- **接口路径**: `http://localhost:8089/wxapi/allApi/cancelOrder`
+- **请求方式**: `POST`
+- **Content-Type**: `application/json`
+
+#### Body
+| 参数名 | 类型 | 是否必填 | 描述 |
+| :--- | :--- | :--- | :--- |
+| `makeId` | Integer | 是 | **预约订单的唯一ID** |
+
+
+**请求示例:**
+```json
+{
+  "makeId": 25
+}
+```
+返回结果
+-   **成功响应**:
+    ```json
+    {"code": 200, "msg": "取消成功", "data": null}
+    ```
+-   **时间限制**:
+-   ```json
+    {"code": 500, "msg": "已临近就诊时间（少于1天），无法取消预约!", "data": null}
+    ```
+-   **重复取消**:
+-  ```json
+    {"code": 500, "msg": "订单已经取消，请勿重复操作!", "data": null}
+    ```
+-   **订单不存在**:
+-  ```json
+    {"code": 500, "msg": "订单不存在!", "data": null}
+    ```
+
   
 
