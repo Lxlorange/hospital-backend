@@ -497,6 +497,15 @@ public class PhoneProjectController {
             return ResultUtils.error("今日号数已经被预约完，请选择其他排班!");
         }
 
+        QueryWrapper<MakeOrder> duplicateCheckQuery = new QueryWrapper<>();
+        duplicateCheckQuery.lambda()
+                .eq(MakeOrder::getUserId, makeOrde.getUserId())
+                .eq(MakeOrder::getScheduleId, makeOrde.getScheduleId())
+                .eq(MakeOrder::getStatus, "1");
+        if (callService.count(duplicateCheckQuery) > 0) {
+            return ResultUtils.error("您已预约过该时段，请勿重复挂号!");
+        }
+
         // 价格校验：以后端数据库中的价格为准，防止前端篡改
         makeOrde.setPrice(schedule.getPrice());
 
