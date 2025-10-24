@@ -1,4 +1,5 @@
-target/
-.DS_Store
-/.idea
-application-test.yml
+target
+.idea/
+src/main/java/com/itmk/netSystem/advice
+src/main/java/com/itmk/netSystem/plat
+/uploads
