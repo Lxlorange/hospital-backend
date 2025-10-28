@@ -561,7 +561,7 @@ public class PhoneProjectController {
         }
 
         // 更新订单状态
-        order.setStatus("2"); 
+        order.setStatus("2");
         callService.updateById(order);
 
         // 恢复号源

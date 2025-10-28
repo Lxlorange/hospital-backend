@@ -109,7 +109,7 @@
 **请求示例:**
 ```json
 {
-  "makeId": 25
+  "makeId": 25 //替换成可以用的
 }
 ```
 返回结果
@@ -129,6 +129,274 @@
 -  ```json
     {"code": 500, "msg": "订单不存在!", "data": null}
     ```
+---
 
-  
+## 3. 查询指定用户的预约列表
 
+### 接口描述
+分页查询指定用户的预约挂号列表，支持按订单状态筛选。
+
+- **接口路径**: `http://localhost:8089/wxapi/allApi/getOrderList`
+- **请求方式**: `GET`
+- **Content-Type**: `application/json`
+
+#### Body
+| 参数名 | 类型 | 是否必填 | 描述 |
+| :--- | :--- |:-----| :--- |
+| `userId` | Integer | 是    | **要查询的用户的ID** |
+| `currentPage` | Integer | 是    | **当前页码, 从1开始** |
+| `pageSize` | Integer | 是    | **每页记录数** |
+| `status` | String | 否    | **订单状态。"1": 已预约, "2": 已取消。不传则查询所有。** |
+
+
+**请求示例:**
+查询 userId 为 2 的用户的“已取消”的第一页订单 (每页10条):
+`http://localhost:8089/wxapi/allApi/getOrderList?userId=2&currentPage=1&pageSize=10&status=2`
+
+返回结果
+-   **成功响应**:
+    ```json
+    {
+    "msg": "查询成功",
+    "code": 200,
+    "data": {
+        "records": [
+            {
+                "makeId": 32,
+                "scheduleId": 227,
+                "userId": 2,
+                "visitUserId": 7,
+                "doctorId": 24,
+                "times": "2025-10-26",
+                "timesArea": "0",
+                "week": "星期日",
+                "createTime": "2025-10-23",
+                "price": 80.00,
+                "address": "305",
+                "status": "2",
+                "hasCall": "0",
+                "hasVisit": "0",
+                "visitname": "成",
+                "deptName": "儿科",
+                "nickName": "刘波",
+                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
+                "morningAppointment": true,
+                "pendingVisit": false,
+                "cancelled": true
+            },
+            {
+                "makeId": 31,
+                "scheduleId": 258,
+                "userId": 2,
+                "visitUserId": 7,
+                "doctorId": 24,
+                "times": "2025-10-26",
+                "timesArea": "0",
+                "week": "星期日",
+                "createTime": "2025-10-23",
+                "price": 80.00,
+                "address": "305",
+                "status": "2",
+                "hasCall": "0",
+                "hasVisit": "0",
+                "visitname": "成",
+                "deptName": "儿科",
+                "nickName": "刘波",
+                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
+                "morningAppointment": true,
+                "pendingVisit": false,
+                "cancelled": true
+            },
+            {
+                "makeId": 30,
+                "scheduleId": 227,
+                "userId": 2,
+                "visitUserId": 8,
+                "doctorId": 24,
+                "times": "2025-10-26",
+                "timesArea": "0",
+                "week": "星期日",
+                "createTime": "2025-10-23",
+                "price": 80.00,
+                "address": "305",
+                "status": "2",
+                "hasCall": "0",
+                "hasVisit": "0",
+                "visitname": "王",
+                "deptName": "儿科",
+                "nickName": "刘波",
+                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
+                "morningAppointment": true,
+                "pendingVisit": false,
+                "cancelled": true
+            },
+            {
+                "makeId": 29,
+                "scheduleId": 258,
+                "userId": 2,
+                "visitUserId": 8,
+                "doctorId": 24,
+                "times": "2025-10-26",
+                "timesArea": "0",
+                "week": "星期日",
+                "createTime": "2025-10-23",
+                "price": 80.00,
+                "address": "305",
+                "status": "2",
+                "hasCall": "0",
+                "hasVisit": "0",
+                "visitname": "王",
+                "deptName": "儿科",
+                "nickName": "刘波",
+                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
+                "morningAppointment": true,
+                "pendingVisit": false,
+                "cancelled": true
+            },
+            {
+                "makeId": 28,
+                "scheduleId": 227,
+                "userId": 2,
+                "visitUserId": 7,
+                "doctorId": 24,
+                "times": "2025-10-26",
+                "timesArea": "0",
+                "week": "星期日",
+                "createTime": "2025-10-23",
+                "price": 80.00,
+                "address": "305",
+                "status": "2",
+                "hasCall": "0",
+                "hasVisit": "0",
+                "visitname": "成",
+                "deptName": "儿科",
+                "nickName": "刘波",
+                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
+                "morningAppointment": true,
+                "pendingVisit": false,
+                "cancelled": true
+            },
+            {
+                "makeId": 27,
+                "scheduleId": 258,
+                "userId": 2,
+                "visitUserId": 7,
+                "doctorId": 24,
+                "times": "2025-10-26",
+                "timesArea": "0",
+                "week": "星期日",
+                "createTime": "2025-10-23",
+                "price": 80.00,
+                "address": "305",
+                "status": "2",
+                "hasCall": "0",
+                "hasVisit": "0",
+                "visitname": "成",
+                "deptName": "儿科",
+                "nickName": "刘波",
+                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
+                "morningAppointment": true,
+                "pendingVisit": false,
+                "cancelled": true
+            },
+            {
+                "makeId": 26,
+                "scheduleId": 227,
+                "userId": 2,
+                "visitUserId": 8,
+                "doctorId": 24,
+                "times": "2025-10-26",
+                "timesArea": "0",
+                "week": "星期日",
+                "createTime": "2025-10-23",
+                "price": 80.00,
+                "address": "305",
+                "status": "2",
+                "hasCall": "0",
+                "hasVisit": "0",
+                "visitname": "王",
+                "deptName": "儿科",
+                "nickName": "刘波",
+                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
+                "morningAppointment": true,
+                "pendingVisit": false,
+                "cancelled": true
+            },
+            {
+                "makeId": 25,
+                "scheduleId": 227,
+                "userId": 2,
+                "visitUserId": 8,
+                "doctorId": 24,
+                "times": "2025-10-26",
+                "timesArea": "0",
+                "week": "星期日",
+                "createTime": "2025-10-23",
+                "price": 80.00,
+                "address": "305",
+                "status": "2",
+                "hasCall": "0",
+                "hasVisit": "0",
+                "visitname": "王",
+                "deptName": "儿科",
+                "nickName": "刘波",
+                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
+                "morningAppointment": true,
+                "pendingVisit": false,
+                "cancelled": true
+            },
+            {
+                "makeId": 24,
+                "scheduleId": 227,
+                "userId": 2,
+                "visitUserId": 8,
+                "doctorId": 24,
+                "times": "2025-10-26",
+                "timesArea": "0",
+                "week": "星期日",
+                "createTime": "2025-10-23",
+                "price": 80.00,
+                "address": "305",
+                "status": "2",
+                "hasCall": "0",
+                "hasVisit": "0",
+                "visitname": "王",
+                "deptName": "儿科",
+                "nickName": "刘波",
+                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
+                "morningAppointment": true,
+                "pendingVisit": false,
+                "cancelled": true
+            },
+            {
+                "makeId": 23,
+                "scheduleId": 227,
+                "userId": 2,
+                "visitUserId": 8,
+                "doctorId": 24,
+                "times": "2025-10-26",
+                "timesArea": "0",
+                "week": "星期日",
+                "createTime": "2025-10-23",
+                "price": 80.00,
+                "address": "305",
+                "status": "2",
+                "hasCall": "0",
+                "hasVisit": "0",
+                "visitname": "王",
+                "deptName": "儿科",
+                "nickName": "刘波",
+                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
+                "morningAppointment": true,
+                "pendingVisit": false,
+                "cancelled": true
+            }
+        ],
+        "total": 17,
+        "size": 10,
+        "current": 1,
+        "pages": 2
+    }
+    }
+    ``` 
+---
