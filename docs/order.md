@@ -109,7 +109,7 @@
 **请求示例:**
 ```json
 {
-  "makeId": 25 //替换成可以用的
+  "makeId": 25
 }
 ```
 返回结果
@@ -129,274 +129,91 @@
 -  ```json
     {"code": 500, "msg": "订单不存在!", "data": null}
     ```
----
 
-## 3. 查询指定用户的预约列表
+  
 
-### 接口描述
-分页查询指定用户的预约挂号列表，支持按订单状态筛选。
+## 医生加号功能
+当某位医生的排班号源已满时，医生可提交“加号申请”，由管理员审核。审核通过后系统为指定就诊人创建预约单（不占用原剩余号源）。
 
-- **接口路径**: `http://localhost:8089/wxapi/allApi/getOrderList`
-- **请求方式**: `GET`
-- **Content-Type**: `application/json`
+### 1) 提交加号申请（医生）
+- URL: `/api/addSlotRequest/submit`
+- Method: `POST`
+- Body(JSON):
+  - `scheduleId` 排班ID（必填）
+  - `userId` 患者用户ID（必填）
+  - `visitUserId` 就诊人ID（必填）
+  - `address` 就诊地址（可选）
+  - `reason` 加号原因（可选）
+- 返回：
+  - 成功：`{"code":200,"msg":"加号申请已提交，等待管理员审核"}`
+  - 失败：`{"code":500,"msg":"提交失败或当前仍有号源无需加号"}`
 
-#### Body
-| 参数名 | 类型 | 是否必填 | 描述 |
-| :--- | :--- |:-----| :--- |
-| `userId` | Integer | 是    | **要查询的用户的ID** |
-| `currentPage` | Integer | 是    | **当前页码, 从1开始** |
-| `pageSize` | Integer | 是    | **每页记录数** |
-| `status` | String | 否    | **订单状态。"1": 已预约, "2": 已取消。不传则查询所有。** |
+说明：
+- 系统会校验排班是否已满（`lastAmount <= 0`）。若仍有号源，将直接返回失败提示。
+- 若同一医生、同一排班、同一就诊人已存在“待审核”申请，则更新原申请而不重复创建。
 
+### 2) 加号申请列表（管理员）
+- URL: `/api/addSlotRequest/list`
+- Method: `GET`
+- Query:
+  - `currentPage` 当前页，默认 `1`
+  - `pageSize` 每页大小，默认 `10`
+  - `status` 状态筛选（可选：`0`待审核、`1`已通过、`2`已拒绝）
+- 返回：分页列表数据
 
-**请求示例:**
-查询 userId 为 2 的用户的“已取消”的第一页订单 (每页10条):
-`http://localhost:8089/wxapi/allApi/getOrderList?userId=2&currentPage=1&pageSize=10&status=2`
+权限：仅管理员可访问。
 
-返回结果
--   **成功响应**:
-    ```json
-    {
-    "msg": "查询成功",
-    "code": 200,
-    "data": {
-        "records": [
-            {
-                "makeId": 32,
-                "scheduleId": 227,
-                "userId": 2,
-                "visitUserId": 7,
-                "doctorId": 24,
-                "times": "2025-10-26",
-                "timesArea": "0",
-                "week": "星期日",
-                "createTime": "2025-10-23",
-                "price": 80.00,
-                "address": "305",
-                "status": "2",
-                "hasCall": "0",
-                "hasVisit": "0",
-                "visitname": "成",
-                "deptName": "儿科",
-                "nickName": "刘波",
-                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
-                "morningAppointment": true,
-                "pendingVisit": false,
-                "cancelled": true
-            },
-            {
-                "makeId": 31,
-                "scheduleId": 258,
-                "userId": 2,
-                "visitUserId": 7,
-                "doctorId": 24,
-                "times": "2025-10-26",
-                "timesArea": "0",
-                "week": "星期日",
-                "createTime": "2025-10-23",
-                "price": 80.00,
-                "address": "305",
-                "status": "2",
-                "hasCall": "0",
-                "hasVisit": "0",
-                "visitname": "成",
-                "deptName": "儿科",
-                "nickName": "刘波",
-                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
-                "morningAppointment": true,
-                "pendingVisit": false,
-                "cancelled": true
-            },
-            {
-                "makeId": 30,
-                "scheduleId": 227,
-                "userId": 2,
-                "visitUserId": 8,
-                "doctorId": 24,
-                "times": "2025-10-26",
-                "timesArea": "0",
-                "week": "星期日",
-                "createTime": "2025-10-23",
-                "price": 80.00,
-                "address": "305",
-                "status": "2",
-                "hasCall": "0",
-                "hasVisit": "0",
-                "visitname": "王",
-                "deptName": "儿科",
-                "nickName": "刘波",
-                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
-                "morningAppointment": true,
-                "pendingVisit": false,
-                "cancelled": true
-            },
-            {
-                "makeId": 29,
-                "scheduleId": 258,
-                "userId": 2,
-                "visitUserId": 8,
-                "doctorId": 24,
-                "times": "2025-10-26",
-                "timesArea": "0",
-                "week": "星期日",
-                "createTime": "2025-10-23",
-                "price": 80.00,
-                "address": "305",
-                "status": "2",
-                "hasCall": "0",
-                "hasVisit": "0",
-                "visitname": "王",
-                "deptName": "儿科",
-                "nickName": "刘波",
-                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
-                "morningAppointment": true,
-                "pendingVisit": false,
-                "cancelled": true
-            },
-            {
-                "makeId": 28,
-                "scheduleId": 227,
-                "userId": 2,
-                "visitUserId": 7,
-                "doctorId": 24,
-                "times": "2025-10-26",
-                "timesArea": "0",
-                "week": "星期日",
-                "createTime": "2025-10-23",
-                "price": 80.00,
-                "address": "305",
-                "status": "2",
-                "hasCall": "0",
-                "hasVisit": "0",
-                "visitname": "成",
-                "deptName": "儿科",
-                "nickName": "刘波",
-                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
-                "morningAppointment": true,
-                "pendingVisit": false,
-                "cancelled": true
-            },
-            {
-                "makeId": 27,
-                "scheduleId": 258,
-                "userId": 2,
-                "visitUserId": 7,
-                "doctorId": 24,
-                "times": "2025-10-26",
-                "timesArea": "0",
-                "week": "星期日",
-                "createTime": "2025-10-23",
-                "price": 80.00,
-                "address": "305",
-                "status": "2",
-                "hasCall": "0",
-                "hasVisit": "0",
-                "visitname": "成",
-                "deptName": "儿科",
-                "nickName": "刘波",
-                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
-                "morningAppointment": true,
-                "pendingVisit": false,
-                "cancelled": true
-            },
-            {
-                "makeId": 26,
-                "scheduleId": 227,
-                "userId": 2,
-                "visitUserId": 8,
-                "doctorId": 24,
-                "times": "2025-10-26",
-                "timesArea": "0",
-                "week": "星期日",
-                "createTime": "2025-10-23",
-                "price": 80.00,
-                "address": "305",
-                "status": "2",
-                "hasCall": "0",
-                "hasVisit": "0",
-                "visitname": "王",
-                "deptName": "儿科",
-                "nickName": "刘波",
-                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
-                "morningAppointment": true,
-                "pendingVisit": false,
-                "cancelled": true
-            },
-            {
-                "makeId": 25,
-                "scheduleId": 227,
-                "userId": 2,
-                "visitUserId": 8,
-                "doctorId": 24,
-                "times": "2025-10-26",
-                "timesArea": "0",
-                "week": "星期日",
-                "createTime": "2025-10-23",
-                "price": 80.00,
-                "address": "305",
-                "status": "2",
-                "hasCall": "0",
-                "hasVisit": "0",
-                "visitname": "王",
-                "deptName": "儿科",
-                "nickName": "刘波",
-                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
-                "morningAppointment": true,
-                "pendingVisit": false,
-                "cancelled": true
-            },
-            {
-                "makeId": 24,
-                "scheduleId": 227,
-                "userId": 2,
-                "visitUserId": 8,
-                "doctorId": 24,
-                "times": "2025-10-26",
-                "timesArea": "0",
-                "week": "星期日",
-                "createTime": "2025-10-23",
-                "price": 80.00,
-                "address": "305",
-                "status": "2",
-                "hasCall": "0",
-                "hasVisit": "0",
-                "visitname": "王",
-                "deptName": "儿科",
-                "nickName": "刘波",
-                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
-                "morningAppointment": true,
-                "pendingVisit": false,
-                "cancelled": true
-            },
-            {
-                "makeId": 23,
-                "scheduleId": 227,
-                "userId": 2,
-                "visitUserId": 8,
-                "doctorId": 24,
-                "times": "2025-10-26",
-                "timesArea": "0",
-                "week": "星期日",
-                "createTime": "2025-10-23",
-                "price": 80.00,
-                "address": "305",
-                "status": "2",
-                "hasCall": "0",
-                "hasVisit": "0",
-                "visitname": "王",
-                "deptName": "儿科",
-                "nickName": "刘波",
-                "formattedAppointmentTime": "星期日 2025-10-26(上午)",
-                "morningAppointment": true,
-                "pendingVisit": false,
-                "cancelled": true
-            }
-        ],
-        "total": 17,
-        "size": 10,
-        "current": 1,
-        "pages": 2
-    }
-    }
-    ``` 
----
+### 3) 加号申请详情（管理员）
+- URL: `/api/addSlotRequest/detail/{requestId}`
+- Method: `GET`
+- Path:
+  - `requestId` 申请ID
+- 返回：申请详情
+
+权限：仅管理员可访问。
+
+### 4) 审核加号申请（管理员）
+- URL: `/api/addSlotRequest/review`
+- Method: `POST`
+- Query/Form:
+  - `requestId` 申请ID（必填）
+  - `status` 审核状态（`1`通过、`2`拒绝）（必填）
+  - `reviewComment` 审核意见（可选）
+- 返回：
+  - 成功：`{"code":200,"msg":"审核完成"}`
+  - 失败：`{"code":500,"msg":"审核失败"}`
+
+审核通过行为：
+- 系统根据申请信息创建一条预约订单 `make_order`：
+  - `status` 设为 `1`（已预约）、`hasVisit` 为 `0`、`hasCall` 为 `0`
+  - `price` 等关键字段以排班为准，防止前端修改
+- 不执行 `subCount(scheduleId)`，即不消耗原剩余号源（用于加号场景）。
+
+防重复：
+- 若同一用户在同一排班已存在状态为 `1` 的订单，则不再重复创建订单，但审核状态仍会按操作更新。
+
+### 5) 我的加号申请（医生）
+- URL: `/api/addSlotRequest/my`
+- Method: `GET`
+- Query:
+  - `currentPage` 当前页，默认 `1`
+  - `pageSize` 每页大小，默认 `10`
+  - `status` 状态筛选（可选）
+- 返回：当前登录医生的加号申请分页列表
+
+## 数据结构说明（简要）
+- `doctor_add_slot_request`（新增表）
+  - `requestId` 主键
+  - `scheduleId` 排班ID
+  - `doctorId` 医生ID（由当前登录医生自动填充）
+  - `userId` 患者用户ID
+  - `visitUserId` 就诊人ID
+  - `times` 日期（由排班复制）
+  - `timesArea` 上午/下午（由排班复制，`0`上午、`1`下午）
+  - `price`、`week`、`address`
+  - `reason` 申请原因
+  - `status` 审核状态（`0`待审、`1`通过、`2`拒绝）
+  - `reviewComment`、`reviewerId`、`reviewTime`
+  - `createTime`、`updateTime`
+
+- 审核通过后会创建 `make_order` 订单一条，用于完成加号预约。
