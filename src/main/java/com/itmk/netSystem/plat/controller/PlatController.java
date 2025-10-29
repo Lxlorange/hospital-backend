@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Collections;
 import java.util.List;
@@ -76,6 +77,53 @@ public class PlatController {
     }
 
 
+
+
+    /**
+     * @description: 根据医生ID、日期和时段查询唯一的排班ID。
+     * @param date     查询的日期 (格式: yyyy-MM-dd)。
+     * @param timeSlot 时段 (0=上午, 1=下午)。
+     * @param doctorId 医生的唯一标识符。
+     * @return 返回包含 scheduleId 的响应实体。如果未找到，则 data 字段为 null。
+     */
+    @GetMapping("/getScheduleId")
+    public ResultVo getScheduleId(@RequestParam String date,
+                                  @RequestParam Integer timeSlot,
+                                  @RequestParam Integer doctorId) {
+        // 参数校验 (基础)
+        if (date == null || date.trim().isEmpty() || timeSlot == null || doctorId == null) {
+            return ResultUtils.error("缺少必要的参数：date, timeSlot, doctorId");
+        }
+
+        LocalDate queryDate;
+        try {
+            queryDate = LocalDate.parse(date);
+        } catch (DateTimeParseException e) {
+            return ResultUtils.error("日期格式不正确，请使用 yyyy-MM-dd 格式");
+        }
+
+        // 构造查询条件
+        QueryWrapper<ScheduleDetail> query = new QueryWrapper<>();
+        query.lambda()
+                .eq(ScheduleDetail::getDoctorId, doctorId)
+                .eq(ScheduleDetail::getTimes, queryDate)
+                .eq(ScheduleDetail::getTimeSlot, timeSlot);
+
+        // 只查询 schedule_id 字段以提高效率
+        query.select("schedule_id");
+
+        // 执行查询
+        ScheduleDetail schedule = setWorkService.getOne(query);
+
+        // 处理查询结果
+        if (schedule != null) {
+            // 找到匹配的排班，返回 scheduleId
+            return ResultUtils.success("排班ID获取成功", schedule.getScheduleId());
+        } else {
+            // 没有找到匹配的排班
+            return ResultUtils.success("未找到指定的排班信息", null);
+        }
+    }
 
     /**
      * 根据指定类型动态获取医生的排班信息。
