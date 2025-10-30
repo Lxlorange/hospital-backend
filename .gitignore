@@ -1,10 +1,7 @@
-<<<<<<< HEAD
 target
 .idea/
 src/main/java/com/itmk/netSystem/advice
 src/main/java/com/itmk/netSystem/plat
 /uploads
-=======
-target/
 .DS_Store
->>>>>>> dev
+
