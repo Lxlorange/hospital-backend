@@ -26,6 +26,8 @@ import com.itmk.netSystem.userPatientPhone.entity.WxUser;
 import com.itmk.netSystem.userPatientPhone.service.UserPatientPhoneService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
@@ -64,6 +66,9 @@ public class PhoneProjectController {
     private SeeService seeService;
     @Autowired
     private Utils jwtUtils;
+    // 注入 JavaMailSender，用于发送邮件（需在 application.properties 配置 smtp）
+    @Autowired
+    private JavaMailSender mailSender;
     //@Autowired
     //private AdviceService adviceService;
 
@@ -483,7 +488,6 @@ public class PhoneProjectController {
     @Transactional
     public ResultVo makeOrderAdd(@RequestBody MakeOrder makeOrde){
         // 从数据库查询排班信息，并使用行锁防止并发问题
-        // 使用 .last("for update") 会在事务期间锁定该行，防止其他事务读取或修改
         QueryWrapper<ScheduleDetail> query = new QueryWrapper<>();
         query.lambda().eq(ScheduleDetail::getScheduleId, makeOrde.getScheduleId()).last("for update");
         ScheduleDetail schedule = setWorkService.getOne(query);
@@ -520,6 +524,67 @@ public class PhoneProjectController {
         if(callService.save(makeOrde)){
             // 预约成功后，对应排班的剩余号源数量减一
             setWorkService.subCount(makeOrde.getScheduleId());
+
+            // 发送邮件提醒（若用户邮箱存在）
+            try {
+                WxUser wxUser = userPatientPhoneService.getById(makeOrde.getUserId());
+                if (wxUser != null && StringUtils.hasText(wxUser.getEmail())) {
+                    String toEmail = wxUser.getEmail();
+                    // 尽量获取医生姓名以便在邮件中展示
+                    String doctorName = "";
+                    if (makeOrde.getDoctorId() != null) {
+                        SysUser doctor = userWebService.getById(makeOrde.getDoctorId());
+                        if (doctor != null) {
+                            doctorName = doctor.getNickName();
+                        }
+                    }
+                    // 处理上午/下午时段
+                    String timesAreaLabel = "";
+                    try {
+                        String ta = makeOrde.getTimesArea();
+                        if ("0".equals(ta)) {
+                            timesAreaLabel = "上午";
+                        } else if ("1".equals(ta)) {
+                            timesAreaLabel = "下午";
+                        }
+                    } catch (Exception ignored) {
+                    }
+                    SimpleMailMessage message = new SimpleMailMessage();
+                    // 注意：这里的发件人地址应与 application.properties 中配置的 spring.mail.username 一致
+                    message.setFrom("18201500146@163.com");
+                    message.setTo(toEmail);
+                    message.setSubject("挂号成功通知");
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("尊敬的用户，您好！\n\n");
+                    sb.append("您已成功预约挂号，相关信息如下：\n");
+                    if (StringUtils.hasText(doctorName)) {
+                        sb.append("医生：").append(doctorName).append("\n");
+                    }
+                    if (StringUtils.hasText(makeOrde.getTimes())) {
+                        sb.append("预约时间：").append(makeOrde.getTimes());
+                        if (StringUtils.hasText(timesAreaLabel)) {
+                            sb.append(" （").append(timesAreaLabel).append("）");
+                        }
+                        sb.append("\n");
+                    } else {
+                        // 如果没有具体日期，但有时段信息也可单独展示
+                        if (StringUtils.hasText(timesAreaLabel)) {
+                            sb.append("预约时段：").append(timesAreaLabel).append("\n");
+                        }
+                    }
+                    sb.append("订单号：").append(Optional.ofNullable(makeOrde.getMakeId()).orElse(0)).append("\n\n");
+                    sb.append("请按预约时间前来就诊，祝您健康！");
+                    message.setText(sb.toString());
+                    mailSender.send(message);
+                    System.out.println("邮件已发送到：" + toEmail);
+                } else {
+                    System.out.println("未找到用户邮箱，跳过邮件发送。");
+                }
+            } catch (Exception e) {
+                // 发送邮件失败不影响主流程，记录异常即可
+                System.err.println("发送挂号成功邮件失败：" + e.getMessage());
+            }
+
             return ResultUtils.success("预约成功!");
         }
 
@@ -657,6 +722,31 @@ public class PhoneProjectController {
         if(user != null){
             return ResultUtils.error("账号被注册!");
         }
+
+        //手机是否存在
+        if(StringUtils.hasText(wxUser.getPhone())){
+            QueryWrapper<WxUser> phoneQuery = new QueryWrapper<>();
+            phoneQuery.lambda().eq(WxUser::getPhone, wxUser.getPhone());
+            if(userPatientPhoneService.getOne(phoneQuery) != null){
+                return ResultUtils.error("手机号已被注册!");
+            }
+        }
+
+        //邮箱是否存在+格式
+        if(StringUtils.hasText(wxUser.getEmail())){
+            String email = wxUser.getEmail().trim();
+            String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+            if(!email.matches(emailRegex)){
+                return ResultUtils.error("邮箱格式不正确!");
+            }
+            QueryWrapper<WxUser> emailQuery = new QueryWrapper<>();
+            emailQuery.lambda().eq(WxUser::getEmail, email);
+            if(userPatientPhoneService.getOne(emailQuery) != null){
+                return ResultUtils.error("邮箱已被注册!");
+            }
+            wxUser.setEmail(email);
+        }
+
         wxUser.setCreateTime(new Date());
         wxUser.setStatus(true);
         // 对用户密码进行MD5加密处理
@@ -733,3 +823,4 @@ public class PhoneProjectController {
         return ResultUtils.error("新增失败!");
     }*/
 }
+

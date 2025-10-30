@@ -22,6 +22,13 @@ public interface UserPatientPhoneService extends IService<WxUser> {
     WxUser findByUsername(String username);
 
     /**
+     * 根据邮箱查找用户。
+     * @param email 用户邮箱
+     * @return 匹配的用户对象，如果不存在则返回null。
+     */
+    WxUser findByEmail(String email);
+
+    /**
      * 注册一个新用户，会检查手机号是否已存在。
      * @param newUser 新用户的实体对象
      * @return 注册成功返回true，如果手机号已存在则返回false。
