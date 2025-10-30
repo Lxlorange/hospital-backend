@@ -3,6 +3,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.RateLimiter;
+import com.itmk.config.service.GeetestService;
 import com.itmk.tool.Utils;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
@@ -35,6 +39,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 //import com.itmk.netSystem.advice.entity.Suggest;
 //import com.itmk.netSystem.advice.service.AdviceService;
@@ -66,7 +71,15 @@ public class PhoneProjectController {
     private Utils jwtUtils;
     //@Autowired
     //private AdviceService adviceService;
+    @Autowired
+    private GeetestService geetestService;
 
+    // 创建一个 API 限流器缓存 (防“飞快抢号”)
+    // 缓存 10000 个用户，10分钟后过期
+    private final Cache<String, RateLimiter> userRateLimiters = CacheBuilder.newBuilder()
+            .maximumSize(10000)
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build();
 
 
     /**
@@ -482,6 +495,28 @@ public class PhoneProjectController {
     @PostMapping("/makeOrderAdd")
     @Transactional
     public ResultVo makeOrderAdd(@RequestBody MakeOrder makeOrde){
+        // 人机验证 (防 Bot) ---
+        // (注意: 必须能从 makeOrde 对象拿到 userId)
+        String userId = makeOrde.getUserId().toString();
+        boolean isHuman = geetestService.verify(makeOrde, userId);
+        if (!isHuman) {
+            return ResultUtils.error("安全验证未通过，请刷新重试",401);
+        }
+
+        // API 限流 (防“飞快抢号”) ---
+        RateLimiter limiter;
+        try {
+            // 限制：每 5 秒 1 次请求 (0.2 = 1/5)
+            // (你可以根据业务调整这个速率)
+            limiter = userRateLimiters.get(userId, () -> RateLimiter.create(0.2));
+        } catch (Exception e) {
+            return ResultUtils.error("服务器繁忙，请稍后",500);
+        }
+
+        if (!limiter.tryAcquire()) {
+            // 如果获取不到（即请求过快），立即拒绝
+            return ResultUtils.error("您点击太快了，请 5 秒后再试",429);
+        }
         // 从数据库查询排班信息，并使用行锁防止并发问题
         // 使用 .last("for update") 会在事务期间锁定该行，防止其他事务读取或修改
         QueryWrapper<ScheduleDetail> query = new QueryWrapper<>();

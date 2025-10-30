@@ -45,3 +45,11 @@ mybatis-plus:
 logging:
   pattern:
     console: '%d{yyyy-MM-dd} [%thread] %-5level %logger- %msg%n'
+
+
+geetest:
+  id: 46cd832af3cf1316d9503376f18d8d69
+  key: c7d8e60ca8d7e82f021e9da3a59ddb62
+  api:
+    url: http://api.geetest.com/v4/validate
+  enabled: false
