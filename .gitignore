@@ -3,3 +3,5 @@ target
 src/main/java/com/itmk/netSystem/advice
 src/main/java/com/itmk/netSystem/plat
 /uploads
+.DS_Store
+
