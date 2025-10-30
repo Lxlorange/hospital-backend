@@ -19,6 +19,7 @@ public class WxUser implements Serializable {
     private String sex;
     private String name;
     private String image;
+    private String email;
     private boolean status = true;
     private String password;
 

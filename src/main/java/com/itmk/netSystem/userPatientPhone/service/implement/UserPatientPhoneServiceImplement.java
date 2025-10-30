@@ -30,6 +30,13 @@ public class UserPatientPhoneServiceImplement extends ServiceImpl<UserPatientPho
     }
 
     @Override
+    public WxUser findByEmail(String email) {
+        QueryWrapper<WxUser> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(WxUser::getEmail, email);
+        return this.baseMapper.selectOne(queryWrapper);
+    }
+
+    @Override
     public boolean register(WxUser newUser) {
         // 检查手机号是否已存在
         WxUser existingUser = findByPhone(newUser.getPhone());

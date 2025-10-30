@@ -23,6 +23,13 @@ public interface UserPatientPhoneMapper extends BaseMapper<WxUser> {
     WxUser selectByUserName(@Param("userName") String userName);
 
     /**
+     * 根据邮箱查询唯一用户。
+     * @param email 邮箱
+     * @return 匹配的用户对象，如果不存在则返回null。
+     */
+    WxUser selectByEmail(@Param("email") String email);
+
+    /**
      * 批量更新用户的状态（启用/禁用）。
      * @param userIds 用户ID列表
      * @param status 目标状态

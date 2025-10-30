@@ -11,7 +11,15 @@ spring:
     url: jdbc:mysql://8.130.160.51:3306/practice?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
     username: root
     password: BJTUSoftware2025
-
+  mail:
+    host: smtp.163.com
+    port: 465
+    username: 18201500146@163.com
+    password: NNUXwFAbnDVdgYnC
+    default-encoding: UTF-8
+    properties:
+      "mail.smtp.auth": true
+      "mail.smtp.ssl.enable": true
 
 
 web:
