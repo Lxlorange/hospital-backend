@@ -12,6 +12,7 @@ import java.util.List;
 public interface setWorkService extends IService<ScheduleDetail> {
     IPage<ScheduleDetail> getList(setWorkPage parm);
     List<ScheduleDetail> selectById(DoctorInformationNum doctorInformationNum);
+    List<ScheduleDetail> selectByWorkId(Integer workId);
     /**
      * 根据医生ID和日期范围查询排班列表
      * @param doctorId  医生ID

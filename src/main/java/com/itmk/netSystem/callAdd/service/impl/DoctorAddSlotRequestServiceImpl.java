@@ -27,7 +27,8 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
     @Transactional
     public boolean submitAddSlotRequest(DoctorAddSlotRequest request) {
         // 检查排班是否存在且已满
-        ScheduleDetail schedule = setWorkService.getById(request.getScheduleId());
+        System.out.println(request.getScheduleId());
+        ScheduleDetail schedule = setWorkService.selectByWorkId(request.getScheduleId()).get(0);
         if (schedule == null) {
             return false;
         }
