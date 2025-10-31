@@ -51,10 +51,14 @@ public class DoctorAddSlotRequestController {
         }
         request.setDoctorId(currentUser.getUserId().intValue());
         boolean ok = addSlotRequestService.submitAddSlotRequest(request);
-        return ok ? ResultUtils.success("加号申请已提交，等待管理员审核") : ResultUtils.error("提交失败或当前仍有号源无需加号");
+        return ok ? ResultUtils.success("加号成功，已为患者创建预约") : ResultUtils.error("加号失败：当前仍有号源无需加号或该患者已有预约");
     }
 
+    // 以下方法已注释，因为加号功能改为直接创建订单，不再需要审核流程
+    
+    /*
     /** 管理员获取加号申请列表 */
+    /*
     @GetMapping("/list")
     public ResultVo list(@RequestParam(defaultValue = "1") Long currentPage,
                          @RequestParam(defaultValue = "10") Long pageSize,
@@ -73,6 +77,7 @@ public class DoctorAddSlotRequestController {
     }
 
     /** 管理员查看申请详情 */
+    /*
     @GetMapping("/detail/{requestId}")
     public ResultVo detail(@PathVariable Long requestId) {
         if (!isAdmin()) {
@@ -86,6 +91,7 @@ public class DoctorAddSlotRequestController {
     }
 
     /** 管理员审核 */
+    /*
     @PostMapping("/review")
     @Transactional
     public ResultVo review(@RequestParam Long requestId,
@@ -104,6 +110,7 @@ public class DoctorAddSlotRequestController {
     }
 
     /** 医生查看自己的加号申请 */
+    /*
     @GetMapping("/my")
     public ResultVo my(@RequestParam(defaultValue = "1") Long currentPage,
                        @RequestParam(defaultValue = "10") Long pageSize,
@@ -126,6 +133,7 @@ public class DoctorAddSlotRequestController {
         IPage<DoctorAddSlotRequest> result = addSlotRequestService.page(page, query);
         return ResultUtils.success("查询成功", result);
     }
+    */
 
     /**
      * 为加号选择患者：支持按手机号/身份证号/姓名查询，返回 userId 及其名下的 visitUserId 列表

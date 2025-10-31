@@ -36,31 +36,38 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
             // 仍有号源无需加号
             return false;
         }
-        // 避免重复提交：同一医生同一排班同一就诊人若有“待审核”记录则更新
-        QueryWrapper<DoctorAddSlotRequest> pendingQuery = new QueryWrapper<>();
-        pendingQuery.lambda()
-                .eq(DoctorAddSlotRequest::getDoctorId, request.getDoctorId())
-                .eq(DoctorAddSlotRequest::getScheduleId, request.getScheduleId())
-                .eq(DoctorAddSlotRequest::getVisitUserId, request.getVisitUserId())
-                .eq(DoctorAddSlotRequest::getStatus, "0");
-        DoctorAddSlotRequest existing = this.getOne(pendingQuery);
-        Date now = new Date();
-        if (existing != null) {
-            existing.setReason(request.getReason());
-            existing.setUpdateTime(now);
-            return this.updateById(existing);
+        
+        // 防重复：同用户同排班已存在"已预约"订单则拒绝创建
+        QueryWrapper<MakeOrder> dup = new QueryWrapper<>();
+        dup.lambda()
+                .eq(MakeOrder::getUserId, request.getUserId())
+                .eq(MakeOrder::getScheduleId, request.getScheduleId())
+                .eq(MakeOrder::getStatus, "1");
+        if (callService.count(dup) > 0) {
+            return false; // 已存在预约订单，不允许重复加号
         }
-        request.setStatus("0");
-        request.setCreateTime(now);
-        request.setUpdateTime(now);
-        // 从排班复制必要信息
-        request.setPrice(schedule.getPrice());
-        request.setWeek(schedule.getWeek());
-        request.setTimes(schedule.getTimes() == null ? null : schedule.getTimes().toString());
-        request.setTimesArea(schedule.getTimeSlot() == null ? null : (schedule.getTimeSlot() == 0 ? "0" : "1"));
-        return this.save(request);
+        
+        // 直接创建预约订单（加号不占用 lastAmount）
+        MakeOrder order = new MakeOrder();
+        order.setScheduleId(request.getScheduleId());
+        order.setUserId(request.getUserId());
+        order.setVisitUserId(request.getVisitUserId());
+        order.setDoctorId(request.getDoctorId());
+        order.setTimes(schedule.getTimes() == null ? null : schedule.getTimes().toString());
+        order.setTimesArea(schedule.getTimeSlot() == null ? null : (schedule.getTimeSlot() == 0 ? "0" : "1"));
+        order.setWeek(schedule.getWeek());
+        order.setCreateTime(new Date());
+        order.setPrice(schedule.getPrice());
+        order.setAddress(request.getAddress());
+        order.setStatus("1"); // 已预约
+        order.setHasVisit("0");
+        order.setHasCall("0");
+        
+        return callService.save(order);
     }
 
+    // 审核方法已注释，因为加号功能改为直接创建订单，不再需要审核流程
+    /*
     @Override
     @Transactional
     public boolean reviewAddSlotRequest(Long requestId, String status, String reviewComment, Long reviewerId) {
@@ -83,7 +90,7 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
             if (schedule == null) {
                 return false;
             }
-            // 防重复：同用户同排班已存在“已预约”订单则拒绝创建
+            // 防重复：同用户同排班已存在"已预约"订单则拒绝创建
             QueryWrapper<MakeOrder> dup = new QueryWrapper<>();
             dup.lambda()
                     .eq(MakeOrder::getUserId, req.getUserId())
@@ -110,4 +117,5 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
         }
         return true;
     }
+    */
 }
