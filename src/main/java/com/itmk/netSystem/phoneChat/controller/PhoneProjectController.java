@@ -539,11 +539,12 @@ public class PhoneProjectController {
 
         QueryWrapper<MakeOrder> duplicateCheckQuery = new QueryWrapper<>();
         duplicateCheckQuery.lambda()
-                .eq(MakeOrder::getUserId, makeOrde.getUserId())
+                .eq(MakeOrder::getVisitUserId, makeOrde.getVisitUserId())
                 .eq(MakeOrder::getScheduleId, makeOrde.getScheduleId())
-                .eq(MakeOrder::getStatus, "1");
+                .eq(MakeOrder::getStatus, "1"); // 仅检查状态为“已预约”的订单
+
         if (callService.count(duplicateCheckQuery) > 0) {
-            return ResultUtils.error("您已预约过该时段，请勿重复挂号!");
+            return ResultUtils.error("该就诊人已预约过该时段，请勿重复挂号!");
         }
 
         // 价格校验：以后端数据库中的价格为准，防止前端篡改
