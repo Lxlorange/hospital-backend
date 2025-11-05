@@ -647,28 +647,106 @@ public class PhoneProjectController {
             return ResultUtils.error("订单已经取消，请勿重复操作!");
         }
 
-        // 取消时间限制：就诊前一天（含当天）不允许取消
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDate appointmentDate = LocalDate.parse(order.getTimes(), formatter);
-            LocalDate today = LocalDate.now();
+        // 取消时间限制：就诊前一天（含当天）不允许取消；
+        // 但如果订单为“待修改”来源（originalStatus='3'），放宽限制以便用户处理停诊
+        String originalStatusForTimeCheck = order.getStatus();
+        if (!"3".equals(originalStatusForTimeCheck)) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDate appointmentDate = LocalDate.parse(order.getTimes(), formatter);
+                LocalDate today = LocalDate.now();
 
-            if (appointmentDate.isBefore(today.plusDays(1))) {
-                return ResultUtils.error("已临近就诊时间（少于1天），无法取消预约!");
+                if (appointmentDate.isBefore(today.plusDays(1))) {
+                    return ResultUtils.error("已临近就诊时间（少于1天），无法取消预约!");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResultUtils.error("系统错误，无法处理您的取消请求。");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResultUtils.error("系统错误，无法处理您的取消请求。");
         }
 
-        // 更新订单状态
+        // 更新订单状态前记录原状态
+        String originalStatus = order.getStatus();
         order.setStatus("2");
         callService.updateById(order);
 
-        // 恢复号源
-        setWorkService.addCount(order.getScheduleId());
+        // 恢复号源：仅当原订单为正常预约 (status='1') 时恢复；
+        // 若是“待修改”(status='3') 取消，则不恢复原排班号源
+        if ("1".equals(originalStatus)) {
+            setWorkService.addCount(order.getScheduleId());
+        }
 
         return ResultUtils.success("取消成功");
+    }
+
+    /**
+     * @description: 用户将“待修改”的订单改签到同医生的其他排班。
+     * @param makeOrder 传入 makeId（原订单ID）与 scheduleId（新排班ID）
+     */
+    @Transactional
+    @PostMapping("/rescheduleOrder")
+    public ResultVo rescheduleOrder(@RequestBody MakeOrder makeOrder) {
+        // 拉取原订单
+        MakeOrder order = callService.getById(makeOrder.getMakeId());
+        if (order == null) {
+            return ResultUtils.error("订单不存在!");
+        }
+
+        // 仅允许改签“待修改”的订单
+        if (!"3".equals(order.getStatus())) {
+            return ResultUtils.error("仅允许改签待修改订单!");
+        }
+
+        // 行锁获取目标排班，确保并发安全
+        QueryWrapper<ScheduleDetail> query = new QueryWrapper<>();
+        query.lambda().eq(ScheduleDetail::getScheduleId, makeOrder.getScheduleId()).last("for update");
+        ScheduleDetail newSchedule = setWorkService.getOne(query);
+
+        if (newSchedule == null) {
+            return ResultUtils.error("目标排班不存在!");
+        }
+        // 停诊不可改签
+        if (!"1".equals(newSchedule.getType())) {
+            return ResultUtils.error("目标排班已停诊或不可用!");
+        }
+        // 仅允许改签到同一医生的其他排班
+        if (newSchedule.getDoctorId() == null || !newSchedule.getDoctorId().equals(order.getDoctorId())) {
+            return ResultUtils.error("仅可改签到该医生的其他排班!");
+        }
+
+        // 重复预约校验：同就诊人，同排班，不允许已有有效预约
+        QueryWrapper<MakeOrder> duplicateCheckQuery = new QueryWrapper<>();
+        duplicateCheckQuery.lambda()
+                .eq(MakeOrder::getVisitUserId, order.getVisitUserId())
+                .eq(MakeOrder::getScheduleId, newSchedule.getScheduleId())
+                .eq(MakeOrder::getStatus, "1");
+        if (callService.count(duplicateCheckQuery) > 0) {
+            return ResultUtils.error("该就诊人已在该时段有预约，无法改签!");
+        }
+
+        // 更新订单为新排班信息
+        order.setScheduleId(newSchedule.getScheduleId());
+        try {
+            String newDate = newSchedule.getTimes() == null ? null : newSchedule.getTimes().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            order.setTimes(newDate);
+        } catch (Exception ignored) {}
+        if (newSchedule.getTimeSlot() != null) {
+            order.setTimesArea(String.valueOf(newSchedule.getTimeSlot()));
+        }
+        order.setWeek(newSchedule.getWeek());
+        order.setPrice(newSchedule.getPrice());
+        order.setStatus("1"); // 改签后恢复为已预约状态
+        order.setHasVisit("0");
+        order.setHasCall("0");
+
+        // 持久化订单更新
+        callService.updateById(order);
+
+        // 若还有号则号数-1，没号则强加
+        if (!(newSchedule.getLastAmount() == null || newSchedule.getLastAmount() <= 0)) {
+            setWorkService.subCount(newSchedule.getScheduleId());
+        }
+        return ResultUtils.success("改签成功!");
     }
 
     /**
