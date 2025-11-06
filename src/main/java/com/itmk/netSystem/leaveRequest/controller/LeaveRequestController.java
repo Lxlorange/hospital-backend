@@ -3,6 +3,7 @@ package com.itmk.netSystem.leaveRequest.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.itmk.netSystem.leaveRequest.entity.LeaveRequestListItem;
 import com.itmk.netSystem.leaveRequest.entity.LeaveRequest;
 import com.itmk.netSystem.leaveRequest.service.LeaveRequestService;
 import com.itmk.netSystem.schedule.service.ScheduleService;
@@ -16,8 +17,10 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -109,8 +112,55 @@ public class LeaveRequestController {
             query.lambda().eq(LeaveRequest::getDoctorId, doctorId);
         }
         query.lambda().orderByDesc(LeaveRequest::getCreateTime);
+
         IPage<LeaveRequest> result = leaveRequestService.page(page, query);
-        return ResultUtils.success("success", result);
+
+        // 映射为前端期望的 records 结构
+        List<LeaveRequestListItem> items = new ArrayList<>();
+        for (LeaveRequest req : result.getRecords()) {
+            LeaveRequestListItem item = new LeaveRequestListItem();
+            item.setRequestId(req.getRequestId());
+            item.setDoctorId(req.getDoctorId());
+            // 昵称
+            try {
+                if (StringUtils.isNotEmpty(req.getDoctorId())) {
+                    Long doctorIdLong = Long.valueOf(req.getDoctorId());
+                    SysUser user = userWebService.getById(doctorIdLong);
+                    if (user != null) {
+                        item.setNickName(user.getNickName());
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            // 从排班获取日期与时段
+            if (req.getScheduleId() != null) {
+                ScheduleDetail detail = scheduleService.getByScheduleId(req.getScheduleId());
+                if (detail != null) {
+                    String dateStr = detail.getTimes() != null ? detail.getTimes().toString() : null;
+                    item.setStartDate(dateStr);
+                    item.setEndDate(dateStr);
+                    String slotStr = detail.getTimeSlot() != null ? detail.getTimeSlot().toString() : null;
+                    item.setStartTime(slotStr);
+                    item.setEndTime(slotStr);
+                }
+            }
+
+            item.setReason(req.getReason());
+            item.setStatus(req.getStatus());
+            item.setReviewComment(req.getReviewComment());
+            item.setReviewerId(req.getReviewerId());
+            item.setReviewTime(req.getReviewTime());
+            item.setCreateTime(req.getCreateTime());
+            items.add(item);
+        }
+
+        Page<LeaveRequestListItem> itemPage = new Page<>(currentPage, pageSize);
+        itemPage.setRecords(items);
+        itemPage.setTotal(result.getTotal());
+        itemPage.setCurrent(result.getCurrent());
+        itemPage.setSize(result.getSize());
+
+        return ResultUtils.success("success", itemPage);
     }
 
     /**
