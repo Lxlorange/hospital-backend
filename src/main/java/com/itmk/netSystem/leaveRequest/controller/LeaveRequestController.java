@@ -7,6 +7,8 @@ import com.itmk.netSystem.leaveRequest.entity.LeaveRequest;
 import com.itmk.netSystem.leaveRequest.service.LeaveRequestService;
 import com.itmk.netSystem.userWeb.entity.SysUser;
 import com.itmk.netSystem.userWeb.service.userWebService;
+import com.itmk.netSystem.setWork.entity.ScheduleDetail;
+import com.itmk.netSystem.setWork.service.setWorkService;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
 import org.apache.commons.lang.StringUtils;
@@ -30,26 +32,62 @@ public class LeaveRequestController {
     @Autowired
     private userWebService userWebService;
 
+    @Autowired
+    private setWorkService setWorkService;
+
     /**
      * 1. 申请请假接口
      * POST /api/requestLeave
      */
     @PostMapping("/requestLeave")
     public ResultVo requestLeave(@RequestBody LeaveRequest req) {
-        if (StringUtils.isEmpty(req.getDoctorId()) || StringUtils.isEmpty(req.getNickName())
-                || StringUtils.isEmpty(req.getStartDate()) || StringUtils.isEmpty(req.getEndDate())
-                || StringUtils.isEmpty(req.getStartTime()) || StringUtils.isEmpty(req.getEndTime())) {
-            return ResultUtils.error("参数不完整");
+        // 校验医生ID
+        String doctorIdStr = req.getDoctorId();
+        if (StringUtils.isEmpty(doctorIdStr)) {
+            return ResultUtils.error("参数错误：缺少医生ID");
+        }
+        Long doctorIdLong;
+        try {
+            doctorIdLong = Long.valueOf(doctorIdStr);
+        } catch (Exception e) {
+            return ResultUtils.error("医生ID格式错误");
         }
 
+        // 校验医生是否存在
+        SysUser user = userWebService.getById(doctorIdLong);
+        if (user == null) {
+            return ResultUtils.error("医生不存在");
+        }
+
+        // 校验排班ID列表
+        if (req.getScheduleId() == null) {
+            return ResultUtils.error("参数错误：请传入待请假的排班ID列表 scheduleIds");
+        }
+
+        Long scheduleId = req.getScheduleId();
+        if (scheduleId == null) {
+            return ResultUtils.error("存在空的排班ID");
+        }
+        ScheduleDetail detail = setWorkService.getById(scheduleId);
+        if (detail == null) {
+            return ResultUtils.error("无效的排班ID：" + scheduleId);
+        }
+        // 归属校验：排班必须属于该医生
+        if (detail.getDoctorId() == null || !detail.getDoctorId().equals(doctorIdLong.intValue())) {
+            return ResultUtils.error("排班ID " + scheduleId + " 不属于医生 " + doctorIdStr);
+        }
+        // 状态校验：仅允许在正常上班的排班上发起请假申请
+        if (detail.getType() != null && !"1".equals(detail.getType())) {
+            return ResultUtils.error("排班ID " + scheduleId + " 非正常上班状态，无法申请请假");
+        }
+
+        // 提交申请
         boolean ok = leaveRequestService.submit(req);
         if (!ok) {
-            return ResultUtils.error("申请失败");
+            return ResultUtils.error("unknown error");
         }
-        Map<String, Object> data = new HashMap<>();
-        data.put("requestId", req.getRequestId());
-        data.put("status", "0");
-        return ResultUtils.success("申请成功", data);
+
+        return ResultUtils.success("申请成功");
     }
 
     /**

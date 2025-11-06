@@ -1,7 +1,10 @@
 package com.itmk.netSystem.schedule.service.implement;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import com.itmk.netSystem.call.entity.MakeOrder;
+import com.itmk.netSystem.call.service.CallService;
 import com.itmk.netSystem.schedule.entity.*;
 import com.itmk.netSystem.schedule.mapper.*;
 import com.itmk.netSystem.schedule.service.ScheduleService;
@@ -30,6 +33,8 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Autowired private TemplateSlotMapper templateSlotMapper;
     @Autowired private setWorkMapper scheduleDetailMapper;
     @Autowired private userWebMapper SysUserMapper;
+
+    @Autowired private CallService callService;
 
     // 注入用于关联查询的Mapper
     @Autowired private com.itmk.netSystem.userWeb.mapper.userWebMapper sysUserMapper;
@@ -174,8 +179,6 @@ public class ScheduleServiceImpl implements ScheduleService {
     //更新排班实例状态
     @Override
     public void updateInstanceStatus(Long instanceId, Map<String, Integer> request) {
-        // 前端传来的 status: 1=正常, 2=停诊
-        // 需要将其转换为后端的 type: '1'=上班, '0'=休息
         Integer status = request.get("status");
         if (status != null) {
             ScheduleDetail detail = new ScheduleDetail();

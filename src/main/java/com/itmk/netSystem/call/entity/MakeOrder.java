@@ -50,6 +50,31 @@ public class MakeOrder implements Serializable {
     private String deptName;
     @TableField(exist = false)
     private String nickName;
+    @TableField(exist = false)
+    private GeetestParam geetest;
+
+    // 内部类，用于匹配前端传来的 geetest 对象
+    // (注意: 必须是 static 才能被 Jackson 正常反序列化)
+    public static class GeetestParam implements Serializable {
+        private String lot_number;
+        private String pass_token;
+        private String gen_time;
+        private String captcha_output;
+
+        // (为 GeetestParam 添加 Getters 和 Setters)
+        public String getLot_number() { return lot_number; }
+        public void setLot_number(String lot_number) { this.lot_number = lot_number; }
+        public String getPass_token() { return pass_token; }
+        public void setPass_token(String pass_token) { this.pass_token = pass_token; }
+        public String getGen_time() { return gen_time; }
+        public void setGen_time(String gen_time) { this.gen_time = gen_time; }
+        public String getCaptcha_output() { return captcha_output; }
+        public void setCaptcha_output(String captcha_output) { this.captcha_output = captcha_output; }
+    }
+
+    // (为 GeetestParam 字段添加 Getter 和 Setter)
+    public GeetestParam getGeetest() { return geetest; }
+    public void setGeetest(GeetestParam geetest) { this.geetest = geetest; }
 
     public boolean isMorningAppointment() {
         return "0".equals(this.timesArea);

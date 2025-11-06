@@ -3,6 +3,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.RateLimiter;
+import com.itmk.config.service.GeetestService;
 import com.itmk.tool.Utils;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
@@ -26,6 +30,8 @@ import com.itmk.netSystem.userPatientPhone.entity.WxUser;
 import com.itmk.netSystem.userPatientPhone.service.UserPatientPhoneService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
@@ -35,6 +41,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 //import com.itmk.netSystem.advice.entity.Suggest;
 //import com.itmk.netSystem.advice.service.AdviceService;
@@ -64,9 +71,20 @@ public class PhoneProjectController {
     private SeeService seeService;
     @Autowired
     private Utils jwtUtils;
+    // 注入 JavaMailSender，用于发送邮件（需在 application.properties 配置 smtp）
+    @Autowired
+    private JavaMailSender mailSender;
     //@Autowired
     //private AdviceService adviceService;
+    @Autowired
+    private GeetestService geetestService;
 
+    // 创建一个 API 限流器缓存 (防“飞快抢号”)
+    // 缓存 10000 个用户，10分钟后过期
+    private final Cache<String, RateLimiter> userRateLimiters = CacheBuilder.newBuilder()
+            .maximumSize(10000)
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build();
 
 
     /**
@@ -482,8 +500,29 @@ public class PhoneProjectController {
     @PostMapping("/makeOrderAdd")
     @Transactional
     public ResultVo makeOrderAdd(@RequestBody MakeOrder makeOrde){
+        // 人机验证 (防 Bot) ---
+        // (注意: 必须能从 makeOrde 对象拿到 userId)
+        String userId = makeOrde.getUserId().toString();
+        boolean isHuman = geetestService.verify(makeOrde, userId);
+        if (!isHuman) {
+            return ResultUtils.error("安全验证未通过，请刷新重试",401);
+        }
+
+        // API 限流 (防“飞快抢号”) ---
+        RateLimiter limiter;
+        try {
+            // 限制：每 5 秒 1 次请求 (0.2 = 1/5)
+            // (你可以根据业务调整这个速率)
+            limiter = userRateLimiters.get(userId, () -> RateLimiter.create(0.2));
+        } catch (Exception e) {
+            return ResultUtils.error("服务器繁忙，请稍后",500);
+        }
+
+        if (!limiter.tryAcquire()) {
+            // 如果获取不到（即请求过快），立即拒绝
+            return ResultUtils.error("您点击太快了，请 5 秒后再试",429);
+        }
         // 从数据库查询排班信息，并使用行锁防止并发问题
-        // 使用 .last("for update") 会在事务期间锁定该行，防止其他事务读取或修改
         QueryWrapper<ScheduleDetail> query = new QueryWrapper<>();
         query.lambda().eq(ScheduleDetail::getScheduleId, makeOrde.getScheduleId()).last("for update");
         ScheduleDetail schedule = setWorkService.getOne(query);
@@ -500,11 +539,12 @@ public class PhoneProjectController {
 
         QueryWrapper<MakeOrder> duplicateCheckQuery = new QueryWrapper<>();
         duplicateCheckQuery.lambda()
-                .eq(MakeOrder::getUserId, makeOrde.getUserId())
+                .eq(MakeOrder::getVisitUserId, makeOrde.getVisitUserId())
                 .eq(MakeOrder::getScheduleId, makeOrde.getScheduleId())
-                .eq(MakeOrder::getStatus, "1");
+                .eq(MakeOrder::getStatus, "1"); // 仅检查状态为“已预约”的订单
+
         if (callService.count(duplicateCheckQuery) > 0) {
-            return ResultUtils.error("您已预约过该时段，请勿重复挂号!");
+            return ResultUtils.error("该就诊人已预约过该时段，请勿重复挂号!");
         }
 
         // 价格校验：以后端数据库中的价格为准，防止前端篡改
@@ -520,6 +560,67 @@ public class PhoneProjectController {
         if(callService.save(makeOrde)){
             // 预约成功后，对应排班的剩余号源数量减一
             setWorkService.subCount(makeOrde.getScheduleId());
+
+            // 发送邮件提醒（若用户邮箱存在）
+            try {
+                WxUser wxUser = userPatientPhoneService.getById(makeOrde.getUserId());
+                if (wxUser != null && StringUtils.hasText(wxUser.getEmail())) {
+                    String toEmail = wxUser.getEmail();
+                    // 尽量获取医生姓名以便在邮件中展示
+                    String doctorName = "";
+                    if (makeOrde.getDoctorId() != null) {
+                        SysUser doctor = userWebService.getById(makeOrde.getDoctorId());
+                        if (doctor != null) {
+                            doctorName = doctor.getNickName();
+                        }
+                    }
+                    // 处理上午/下午时段
+                    String timesAreaLabel = "";
+                    try {
+                        String ta = makeOrde.getTimesArea();
+                        if ("0".equals(ta)) {
+                            timesAreaLabel = "上午";
+                        } else if ("1".equals(ta)) {
+                            timesAreaLabel = "下午";
+                        }
+                    } catch (Exception ignored) {
+                    }
+                    SimpleMailMessage message = new SimpleMailMessage();
+                    // 注意：这里的发件人地址应与 application.properties 中配置的 spring.mail.username 一致
+                    message.setFrom("18201500146@163.com");
+                    message.setTo(toEmail);
+                    message.setSubject("挂号成功通知");
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("尊敬的用户，您好！\n\n");
+                    sb.append("您已成功预约挂号，相关信息如下：\n");
+                    if (StringUtils.hasText(doctorName)) {
+                        sb.append("医生：").append(doctorName).append("\n");
+                    }
+                    if (StringUtils.hasText(makeOrde.getTimes())) {
+                        sb.append("预约时间：").append(makeOrde.getTimes());
+                        if (StringUtils.hasText(timesAreaLabel)) {
+                            sb.append(" （").append(timesAreaLabel).append("）");
+                        }
+                        sb.append("\n");
+                    } else {
+                        // 如果没有具体日期，但有时段信息也可单独展示
+                        if (StringUtils.hasText(timesAreaLabel)) {
+                            sb.append("预约时段：").append(timesAreaLabel).append("\n");
+                        }
+                    }
+                    sb.append("订单号：").append(Optional.ofNullable(makeOrde.getMakeId()).orElse(0)).append("\n\n");
+                    sb.append("请按预约时间前来就诊，祝您健康！");
+                    message.setText(sb.toString());
+                    mailSender.send(message);
+                    System.out.println("邮件已发送到：" + toEmail);
+                } else {
+                    System.out.println("未找到用户邮箱，跳过邮件发送。");
+                }
+            } catch (Exception e) {
+                // 发送邮件失败不影响主流程，记录异常即可
+                System.err.println("发送挂号成功邮件失败：" + e.getMessage());
+            }
+
             return ResultUtils.success("预约成功!");
         }
 
@@ -546,28 +647,106 @@ public class PhoneProjectController {
             return ResultUtils.error("订单已经取消，请勿重复操作!");
         }
 
-        // 取消时间限制：就诊前一天（含当天）不允许取消
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDate appointmentDate = LocalDate.parse(order.getTimes(), formatter);
-            LocalDate today = LocalDate.now();
+        // 取消时间限制：就诊前一天（含当天）不允许取消；
+        // 但如果订单为“待修改”来源（originalStatus='3'），放宽限制以便用户处理停诊
+        String originalStatusForTimeCheck = order.getStatus();
+        if (!"3".equals(originalStatusForTimeCheck)) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDate appointmentDate = LocalDate.parse(order.getTimes(), formatter);
+                LocalDate today = LocalDate.now();
 
-            if (appointmentDate.isBefore(today.plusDays(1))) {
-                return ResultUtils.error("已临近就诊时间（少于1天），无法取消预约!");
+                if (appointmentDate.isBefore(today.plusDays(1))) {
+                    return ResultUtils.error("已临近就诊时间（少于1天），无法取消预约!");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResultUtils.error("系统错误，无法处理您的取消请求。");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResultUtils.error("系统错误，无法处理您的取消请求。");
         }
 
-        // 更新订单状态
+        // 更新订单状态前记录原状态
+        String originalStatus = order.getStatus();
         order.setStatus("2");
         callService.updateById(order);
 
-        // 恢复号源
-        setWorkService.addCount(order.getScheduleId());
+        // 恢复号源：仅当原订单为正常预约 (status='1') 时恢复；
+        // 若是“待修改”(status='3') 取消，则不恢复原排班号源
+        if ("1".equals(originalStatus)) {
+            setWorkService.addCount(order.getScheduleId());
+        }
 
         return ResultUtils.success("取消成功");
+    }
+
+    /**
+     * @description: 用户将“待修改”的订单改签到同医生的其他排班。
+     * @param makeOrder 传入 makeId（原订单ID）与 scheduleId（新排班ID）
+     */
+    @Transactional
+    @PostMapping("/rescheduleOrder")
+    public ResultVo rescheduleOrder(@RequestBody MakeOrder makeOrder) {
+        // 拉取原订单
+        MakeOrder order = callService.getById(makeOrder.getMakeId());
+        if (order == null) {
+            return ResultUtils.error("订单不存在!");
+        }
+
+        // 仅允许改签“待修改”的订单
+        if (!"3".equals(order.getStatus())) {
+            return ResultUtils.error("仅允许改签待修改订单!");
+        }
+
+        // 行锁获取目标排班，确保并发安全
+        QueryWrapper<ScheduleDetail> query = new QueryWrapper<>();
+        query.lambda().eq(ScheduleDetail::getScheduleId, makeOrder.getScheduleId()).last("for update");
+        ScheduleDetail newSchedule = setWorkService.getOne(query);
+
+        if (newSchedule == null) {
+            return ResultUtils.error("目标排班不存在!");
+        }
+        // 停诊不可改签
+        if (!"1".equals(newSchedule.getType())) {
+            return ResultUtils.error("目标排班已停诊或不可用!");
+        }
+        // 仅允许改签到同一医生的其他排班
+        if (newSchedule.getDoctorId() == null || !newSchedule.getDoctorId().equals(order.getDoctorId())) {
+            return ResultUtils.error("仅可改签到该医生的其他排班!");
+        }
+
+        // 重复预约校验：同就诊人，同排班，不允许已有有效预约
+        QueryWrapper<MakeOrder> duplicateCheckQuery = new QueryWrapper<>();
+        duplicateCheckQuery.lambda()
+                .eq(MakeOrder::getVisitUserId, order.getVisitUserId())
+                .eq(MakeOrder::getScheduleId, newSchedule.getScheduleId())
+                .eq(MakeOrder::getStatus, "1");
+        if (callService.count(duplicateCheckQuery) > 0) {
+            return ResultUtils.error("该就诊人已在该时段有预约，无法改签!");
+        }
+
+        // 更新订单为新排班信息
+        order.setScheduleId(newSchedule.getScheduleId());
+        try {
+            String newDate = newSchedule.getTimes() == null ? null : newSchedule.getTimes().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            order.setTimes(newDate);
+        } catch (Exception ignored) {}
+        if (newSchedule.getTimeSlot() != null) {
+            order.setTimesArea(String.valueOf(newSchedule.getTimeSlot()));
+        }
+        order.setWeek(newSchedule.getWeek());
+        order.setPrice(newSchedule.getPrice());
+        order.setStatus("1"); // 改签后恢复为已预约状态
+        order.setHasVisit("0");
+        order.setHasCall("0");
+
+        // 持久化订单更新
+        callService.updateById(order);
+
+        // 若还有号则号数-1，没号则强加
+        if (!(newSchedule.getLastAmount() == null || newSchedule.getLastAmount() <= 0)) {
+            setWorkService.subCount(newSchedule.getScheduleId());
+        }
+        return ResultUtils.success("改签成功!");
     }
 
     /**
@@ -657,6 +836,31 @@ public class PhoneProjectController {
         if(user != null){
             return ResultUtils.error("账号被注册!");
         }
+
+        //手机是否存在
+        if(StringUtils.hasText(wxUser.getPhone())){
+            QueryWrapper<WxUser> phoneQuery = new QueryWrapper<>();
+            phoneQuery.lambda().eq(WxUser::getPhone, wxUser.getPhone());
+            if(userPatientPhoneService.getOne(phoneQuery) != null){
+                return ResultUtils.error("手机号已被注册!");
+            }
+        }
+
+        //邮箱是否存在+格式
+        if(StringUtils.hasText(wxUser.getEmail())){
+            String email = wxUser.getEmail().trim();
+            String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+            if(!email.matches(emailRegex)){
+                return ResultUtils.error("邮箱格式不正确!");
+            }
+            QueryWrapper<WxUser> emailQuery = new QueryWrapper<>();
+            emailQuery.lambda().eq(WxUser::getEmail, email);
+            if(userPatientPhoneService.getOne(emailQuery) != null){
+                return ResultUtils.error("邮箱已被注册!");
+            }
+            wxUser.setEmail(email);
+        }
+
         wxUser.setCreateTime(new Date());
         wxUser.setStatus(true);
         // 对用户密码进行MD5加密处理
@@ -733,3 +937,4 @@ public class PhoneProjectController {
         return ResultUtils.error("新增失败!");
     }*/
 }
+
