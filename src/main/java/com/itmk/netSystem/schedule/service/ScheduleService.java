@@ -44,4 +44,5 @@ public interface ScheduleService {
      * @param request 请求体，包含 status
      */
     void updateInstanceStatus(Long instanceId, Map<String, Integer> request);
+    public ScheduleDetail getByScheduleId(Long scheduleId);
 }

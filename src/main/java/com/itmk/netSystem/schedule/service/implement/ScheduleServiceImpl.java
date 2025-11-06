@@ -56,6 +56,11 @@ public class ScheduleServiceImpl implements ScheduleService {
         return templates;
     }
 
+    @Override
+    @Transactional
+    public ScheduleDetail getByScheduleId(Long scheduleId) {
+        return scheduleDetailMapper.selectOne(new QueryWrapper<ScheduleDetail>().eq("schedule_id", scheduleId));
+    }
     /**
      * 3.2 保存医生排班模板 (后端自动计算价格版)
      */
@@ -217,4 +222,5 @@ public class ScheduleServiceImpl implements ScheduleService {
                 throw new IllegalArgumentException("不支持的号别类型: " + slotType);
         }
     }
+
 }

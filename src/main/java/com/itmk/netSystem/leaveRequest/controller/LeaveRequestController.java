@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itmk.netSystem.leaveRequest.entity.LeaveRequest;
 import com.itmk.netSystem.leaveRequest.service.LeaveRequestService;
+import com.itmk.netSystem.schedule.service.ScheduleService;
 import com.itmk.netSystem.userWeb.entity.SysUser;
 import com.itmk.netSystem.userWeb.service.userWebService;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
@@ -33,7 +34,7 @@ public class LeaveRequestController {
     private userWebService userWebService;
 
     @Autowired
-    private setWorkService setWorkService;
+    private ScheduleService scheduleService;
 
     /**
      * 1. 申请请假接口
@@ -68,7 +69,7 @@ public class LeaveRequestController {
         if (scheduleId == null) {
             return ResultUtils.error("存在空的排班ID");
         }
-        ScheduleDetail detail = setWorkService.getById(scheduleId);
+        ScheduleDetail detail = scheduleService.getByScheduleId(scheduleId);
         if (detail == null) {
             return ResultUtils.error("无效的排班ID：" + scheduleId);
         }

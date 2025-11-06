@@ -12,7 +12,7 @@
 - 表：`leave_request`
 - 字段：
   - `requestId`：申请ID（自增主键）
-  - `doctorId`：医生ID（示例：`D001`），字符串类型
+  - `doctorId`：医生ID（示例：`001`），字符串类型
   - `nickName`：医生昵称
   - `startDate` / `endDate`：请假开始/结束日期（`YYYY-MM-DD` 字符串）
   - `startTime` / `endTime`：时段（`0=上午`，`1=下午`）
@@ -30,7 +30,7 @@
 - 请求体（JSON）：
 ```json
 {
-  "doctorId": "D001",
+  "doctorId": "001",
   "nickName": "张三",
   "startDate": "2025-10-30",
   "endDate": "2025-11-01",
@@ -107,7 +107,7 @@ curl -X POST "${BASE_URL}/api/requestLeave" \
 
 curl 示例：
 ```bash
-curl -sS "${BASE_URL}/api/leaveRequest/list?currentPage=1&pageSize=10&status=0&doctorId=D001" \
+curl -sS "${BASE_URL}/api/leaveRequest/list?currentPage=1&pageSize=10&status=0&doctorId=001" \
   -H 'token: <管理员或医生登录token>'
 ```
 

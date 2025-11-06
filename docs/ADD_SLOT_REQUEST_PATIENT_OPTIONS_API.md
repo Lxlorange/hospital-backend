@@ -63,7 +63,7 @@
 
 - 按手机号查询：
 ```bash
-curl -sS "${BASE_URL}/api/addSlotRequest/patientOptions?phone=13800001234"
+curl -sS "127.0.0.1:8009/api/addSlotRequest/patientOptions?phone=13800001234"
 ```
 
 - 按身份证号查询：
