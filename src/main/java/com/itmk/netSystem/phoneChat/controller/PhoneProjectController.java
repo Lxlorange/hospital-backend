@@ -7,6 +7,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.RateLimiter;
 import com.itmk.config.service.GeetestService;
+import com.itmk.netSystem.evaluate.entity.Suggest;
+import com.itmk.netSystem.evaluate.service.EvaluateService;
 import com.itmk.tool.Utils;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
@@ -43,8 +45,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-//import com.itmk.netSystem.advice.entity.Suggest;
-//import com.itmk.netSystem.advice.service.AdviceService;
+
 
 
 /**
@@ -928,13 +929,13 @@ public class PhoneProjectController {
      * @param suggest 包含意见反馈内容的对象
      * @return 返回操作成功或失败的结果
      */
-    /*@PostMapping("/addSuggest")
+    @PostMapping("/addSuggest")
     public ResultVo addSuggest(@RequestBody Suggest suggest){
         suggest.setCreateTime(new Date());
-        if(adviceService.save(suggest)){
+        if(evaluateService.save(suggest)){
             return ResultUtils.success("新增成功!");
         }
         return ResultUtils.error("新增失败!");
-    }*/
+    }
 }
 
