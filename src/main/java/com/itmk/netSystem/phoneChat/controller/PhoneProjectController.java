@@ -80,6 +80,8 @@ public class PhoneProjectController {
     @Autowired
     private GeetestService geetestService;
 
+    @Autowired
+    private EvaluateService evaluateService;
     // 创建一个 API 限流器缓存 (防“飞快抢号”)
     // 缓存 10000 个用户，10分钟后过期
     private final Cache<String, RateLimiter> userRateLimiters = CacheBuilder.newBuilder()
