@@ -7,6 +7,7 @@ import com.itmk.netSystem.call.service.CallService;
 import com.itmk.netSystem.callAdd.entity.DoctorAddSlotRequest;
 import com.itmk.netSystem.callAdd.mapper.DoctorAddSlotRequestMapper;
 import com.itmk.netSystem.callAdd.service.DoctorAddSlotRequestService;
+import com.itmk.netSystem.schedule.service.ScheduleService;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 import com.itmk.netSystem.setWork.service.setWorkService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,8 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
     private setWorkService setWorkService;
     @Autowired
     private CallService callService;
+    @Autowired
+    private ScheduleService scheduleService;
 
     @Override
     @Transactional
@@ -32,10 +35,7 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
         if (schedule == null) {
             return false;
         }
-        if (schedule.getLastAmount() != null && schedule.getLastAmount() > 0) {
-            // 仍有号源无需加号
-            return false;
-        }
+
         
         // 防重复：同用户同排班已存在"已预约"订单则拒绝创建
         QueryWrapper<MakeOrder> dup = new QueryWrapper<>();
@@ -46,7 +46,6 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
         if (callService.count(dup) > 0) {
             return false; // 已存在预约订单，不允许重复加号
         }
-        
         // 直接创建预约订单（加号不占用 lastAmount）
         MakeOrder order = new MakeOrder();
         order.setScheduleId(request.getScheduleId());
@@ -62,7 +61,10 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
         order.setStatus("1"); // 已预约
         order.setHasVisit("0");
         order.setHasCall("0");
-        
+        if (schedule.getLastAmount() != null && schedule.getLastAmount() > 0) {
+            schedule.setLastAmount(schedule.getLastAmount()-1);
+            setWorkService.saveOrUpdate(schedule);
+        }
         return callService.save(order);
     }
 
