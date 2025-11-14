@@ -22,6 +22,7 @@ import com.itmk.netSystem.see.service.SeeService;
 import com.itmk.netSystem.journal.entity.News;
 import com.itmk.netSystem.journal.service.JournalService;
 import com.itmk.netSystem.phoneChat.entity.*;
+import com.itmk.netSystem.waitlist.service.WaitlistService;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 import com.itmk.netSystem.setWork.service.setWorkService;
 import com.itmk.netSystem.userWeb.entity.SysUser;
@@ -82,6 +83,8 @@ public class PhoneProjectController {
 
     @Autowired
     private EvaluateService evaluateService;
+    @Autowired
+    private WaitlistService waitlistService;
     // 创建一个 API 限流器缓存 (防“飞快抢号”)
     // 缓存 10000 个用户，10分钟后过期
     private final Cache<String, RateLimiter> userRateLimiters = CacheBuilder.newBuilder()
@@ -676,10 +679,54 @@ public class PhoneProjectController {
         // 恢复号源：仅当原订单为正常预约 (status='1') 时恢复；
         // 若是“待修改”(status='3') 取消，则不恢复原排班号源
         if ("1".equals(originalStatus)) {
+            // 释放一个号源
             setWorkService.addCount(order.getScheduleId());
+            // 尝试将释放的号源分配给候补队列
+            try {
+                waitlistService.allocateFromWaitlistForSchedule(order.getScheduleId());
+            } catch (Exception ignored) {}
         }
 
         return ResultUtils.success("取消成功");
+    }
+
+    /**
+     * 号源为0时，加入候补队列
+     */
+    @PostMapping("/waitlist/join")
+    @Transactional
+    public ResultVo joinWaitlist(@RequestBody WaitlistJoinRequest req) {
+        if (req == null || req.getScheduleId() == null || req.getUserId() == null || req.getVisitUserId() == null) {
+            return ResultUtils.error("参数不完整");
+        }
+        // 校验排班
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<ScheduleDetail> q = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        q.lambda().eq(ScheduleDetail::getScheduleId, req.getScheduleId());
+        ScheduleDetail schedule = setWorkService.getOne(q);
+        if (schedule == null) {
+            return ResultUtils.error("无效的排班信息!");
+        }
+        if (schedule.getLastAmount() != null && schedule.getLastAmount() > 0) {
+            return ResultUtils.error("当前仍有余号，请直接预约，无需候补!");
+        }
+
+        boolean ok = waitlistService.joinWaitlist(req.getScheduleId(), schedule.getDoctorId(), req.getUserId(), req.getVisitUserId());
+        if (ok) {
+            return ResultUtils.success("已加入候补队列");
+        }
+        return ResultUtils.error("加入候补失败，可能已在候补或已有预约");
+    }
+
+    /**
+     * 手动触发：为指定排班分配候补（如有余量）
+     */
+    @PostMapping("/waitlist/allocate")
+    @Transactional
+    public ResultVo allocateWaitlist(@RequestParam("scheduleId") Integer scheduleId) {
+        if (scheduleId == null) return ResultUtils.error("缺少排班ID");
+        boolean allocated = waitlistService.allocateFromWaitlistForSchedule(scheduleId);
+        if (allocated) return ResultUtils.success("已分配一个候补到新余号");
+        return ResultUtils.error("无候补或当前无余号");
     }
 
     /**
