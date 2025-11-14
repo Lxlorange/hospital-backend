@@ -29,7 +29,7 @@
 
 假设今天要查询 `doctorId` 为 `24` 的医生的排班信息：
 
-`http://localhost:8089/wxapi/allapi/getDoctor?userId=2&doctorId=24`
+`http://localhost:8089/wxapi/allApi/getDoctor?userId=2&doctorId=24`
 
 ### 返回结果
 

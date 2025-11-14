@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -37,6 +38,10 @@ public class MakeOrderVisit implements Serializable {
     private String nickName;
     @TableField(exist = false)
     private boolean collapsed = true;
+    @TableField(exist = false)
+    private String address;
+    @TableField(exist = false)
+    private BigDecimal price;
 
     /**
      * 检查本次就诊是否已经完成。
@@ -70,6 +75,22 @@ public class MakeOrderVisit implements Serializable {
         String period = "0".equals(this.timesArea) ? "上午" : "下午";
         return String.format("%s (%s) - %s", this.times, this.week, period);
     }
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
 
     /**
      * 验证就诊后的核心信息（如医嘱）是否已被记录。
