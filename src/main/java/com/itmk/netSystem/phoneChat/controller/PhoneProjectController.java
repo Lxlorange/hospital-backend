@@ -506,13 +506,13 @@ public class PhoneProjectController {
         // 人机验证 (防 Bot) ---
         // (注意: 必须能从 makeOrde 对象拿到 userId)
         String userId = makeOrde.getUserId().toString();
-        boolean isHuman = geetestService.verify(makeOrde, userId);
+        /*boolean isHuman = geetestService.verify(makeOrde, userId);
         if (!isHuman) {
             return ResultUtils.error("安全验证未通过，请刷新重试",401);
-        }
+        }*/
 
         // API 限流 (防“飞快抢号”) ---
-        RateLimiter limiter;
+        /*RateLimiter limiter;
         try {
             // 限制：每 5 秒 1 次请求 (0.2 = 1/5)
             // (你可以根据业务调整这个速率)
@@ -524,7 +524,7 @@ public class PhoneProjectController {
         if (!limiter.tryAcquire()) {
             // 如果获取不到（即请求过快），立即拒绝
             return ResultUtils.error("您点击太快了，请 5 秒后再试",429);
-        }
+        }*/
         // 从数据库查询排班信息，并使用行锁防止并发问题
         QueryWrapper<ScheduleDetail> query = new QueryWrapper<>();
         query.lambda().eq(ScheduleDetail::getScheduleId, makeOrde.getScheduleId()).last("for update");
@@ -540,7 +540,7 @@ public class PhoneProjectController {
             return ResultUtils.error("今日号数已经被预约完，请选择其他排班!");
         }
 
-        QueryWrapper<MakeOrder> duplicateCheckQuery = new QueryWrapper<>();
+        /*QueryWrapper<MakeOrder> duplicateCheckQuery = new QueryWrapper<>();
         duplicateCheckQuery.lambda()
                 .eq(MakeOrder::getVisitUserId, makeOrde.getVisitUserId())
                 .eq(MakeOrder::getScheduleId, makeOrde.getScheduleId())
@@ -548,7 +548,7 @@ public class PhoneProjectController {
 
         if (callService.count(duplicateCheckQuery) > 0) {
             return ResultUtils.error("该就诊人已预约过该时段，请勿重复挂号!");
-        }
+        }*/
 
         // 价格校验：以后端数据库中的价格为准，防止前端篡改
         makeOrde.setPrice(schedule.getPrice());
@@ -565,7 +565,7 @@ public class PhoneProjectController {
             setWorkService.subCount(makeOrde.getScheduleId());
 
             // 发送邮件提醒（若用户邮箱存在）
-            try {
+            /*try {
                 WxUser wxUser = userPatientPhoneService.getById(makeOrde.getUserId());
                 if (wxUser != null && StringUtils.hasText(wxUser.getEmail())) {
                     String toEmail = wxUser.getEmail();
@@ -622,7 +622,7 @@ public class PhoneProjectController {
             } catch (Exception e) {
                 // 发送邮件失败不影响主流程，记录异常即可
                 System.err.println("发送挂号成功邮件失败：" + e.getMessage());
-            }
+            }*/
 
             return ResultUtils.success("预约成功!");
         }
