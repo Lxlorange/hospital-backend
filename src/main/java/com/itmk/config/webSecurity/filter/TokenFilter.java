@@ -105,7 +105,7 @@ public class TokenFilter extends OncePerRequestFilter {
             // 获取请求的URL
             String uri = request.getRequestURI();
 
-            if(!ignoreUrl.contains(uri) && !uri.contains("/images/") && !uri.startsWith("/wxapi/allApi/") && !uri.contains("/swagger-ui/**") && !uri.contains("/swagger-ui.html") && !uri.contains("/swagger-resources/**") && !uri.contains("/v3/api-docs") && !uri.contains("/v2/api-docs") && !uri.contains("/webjars/**") && !uri.contains("/api/sysUser/api-docs") && !uri.contains("/webjars") && !uri.contains("/doc.html") && !uri.contains("/favicon.ico")){
+            if(!ignoreUrl.contains(uri) && !uri.contains("/images/") && !uri.startsWith("/wxapi/allApi/") && !uri.startsWith("/wxapi/allapi/") && !uri.contains("/swagger-ui/**") && !uri.contains("/swagger-ui.html") && !uri.contains("/swagger-resources/**") && !uri.contains("/v3/api-docs") && !uri.contains("/v2/api-docs") && !uri.contains("/webjars/**") && !uri.contains("/api/sysUser/api-docs") && !uri.contains("/webjars") && !uri.contains("/doc.html") && !uri.contains("/favicon.ico")){
                 validateToken(request);
             }
         }catch (AuthenticationException e){

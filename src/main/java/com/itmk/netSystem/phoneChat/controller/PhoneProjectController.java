@@ -732,6 +732,58 @@ public class PhoneProjectController {
         return ResultUtils.error("无候补或当前无余号");
     }
 
+
+
+    @GetMapping("/waitlist/my")
+    public ResultVo myWaitlist(@RequestParam("userId") Integer userId,
+                               @RequestParam(value = "status", required = false) String status) {
+        QueryWrapper<com.itmk.netSystem.waitlist.entity.WaitlistEntry> q = new QueryWrapper<>();
+        q.lambda().eq(com.itmk.netSystem.waitlist.entity.WaitlistEntry::getUserId, userId);
+        if (org.springframework.util.StringUtils.hasText(status)) {
+            q.lambda().eq(com.itmk.netSystem.waitlist.entity.WaitlistEntry::getStatus, status);
+        }
+        q.lambda().orderByDesc(com.itmk.netSystem.waitlist.entity.WaitlistEntry::getCreateTime);
+        java.util.List<com.itmk.netSystem.waitlist.entity.WaitlistEntry> list = waitlistService.list(q);
+
+        java.time.format.DateTimeFormatter df = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        java.util.List<java.util.Map<String, Object>> data = new java.util.ArrayList<>();
+        for (com.itmk.netSystem.waitlist.entity.WaitlistEntry e : list) {
+            java.util.Map<String, Object> m = new java.util.HashMap<>();
+            m.put("id", e.getId());
+            m.put("scheduleId", e.getScheduleId());
+            m.put("doctorId", e.getDoctorId());
+            m.put("userId", e.getUserId());
+            m.put("visitUserId", e.getVisitUserId());
+            com.itmk.netSystem.treatpatient.entity.VisitUser v = treatPatientService.getById(e.getVisitUserId());
+            m.put("visitname", v != null ? v.getVisitname() : "");
+            com.itmk.netSystem.userWeb.entity.SysUser d = userWebService.getById(e.getDoctorId());
+            m.put("doctorName", d != null ? d.getNickName() : "");
+            com.itmk.netSystem.teamDepartment.entity.Department dept = null;
+            if (d != null && d.getDeptId() != null) {
+                dept = teamDepartmentService.getById(d.getDeptId());
+            }
+            m.put("deptName", dept != null ? dept.getDeptName() : "");
+            ScheduleDetail sd= setWorkService.selectByWorkId(e.getScheduleId()).get(0);
+            String times = "";
+            String timesAreaLabel = "";
+            String week = "";
+            if (sd != null) {
+                try { times = sd.getTimes() == null ? "" : sd.getTimes().format(df); } catch (Exception ignored) {}
+                if (sd.getTimeSlot() != null) {
+                    timesAreaLabel = "0".equals(String.valueOf(sd.getTimeSlot())) ? "上午" : "下午";
+                }
+                week = sd.getWeek();
+            }
+            m.put("times", times);
+            m.put("timesAreaLabel", timesAreaLabel);
+            m.put("week", week);
+            m.put("status", e.getStatus());
+            m.put("createTime", e.getCreateTime());
+            data.add(m);
+        }
+        return ResultUtils.success("查询成功", data);
+    }
+
     /**
      * @description: 用户将“待修改”的订单改签到同医生的其他排班。
      * @param makeOrder 传入 makeId（原订单ID）与 scheduleId（新排班ID）
