@@ -135,8 +135,8 @@
                 "deptName": "儿科",
                 "nickName": "李开",
                 "collapsed": true,
-                "address": "门诊楼2层205室",
-                "price": 50.00,
+                "address": "门诊楼2层205室",//地址
+                "price": 50.00,//价格
                 "appointmentSchedule": "2025-11-04 (星期二) - 上午",
                 "visitRecordComplete": true
             },
@@ -170,3 +170,32 @@
         "pages": 1
     }
 }
+```
+字段说明 (records数组中的对象):
+- visitId:             就诊记录的唯一ID
+- makeId:              对应的原始预约订单ID
+- userId:              预约人（小程序用户）的ID
+- visitUserId:         就诊人的ID
+- doctorId:            就诊医生的ID
+- times:               预约日期
+- timesArea:           预约时段 (0: 上午, 1: 下午)
+- week:                星期几
+- hasVisit:            就诊状态 (1: 已就诊)
+- hasLive:             是否需要住院 (1: 需要, 0: 不需要)
+- advice:              医生的医嘱内容
+- visitTime:           实际就诊日期
+- createTime:          该条就诊记录的创建日期
+- visitname:           就诊人的姓名
+- deptName:            就诊科室的名称
+- nickName:            就诊医生的姓名
+- collapsed:           (UI辅助字段) 用于前端控制列表项是否折叠，默认为true
+- address:             就诊地址
+- price:               挂号费用
+- appointmentSchedule: (UI辅助字段) 格式化后的、对用户友好的预约时间字符串
+- visitRecordComplete: (UI辅助字段) 标记就诊记录是否完整（例如是否有医嘱），布尔值
+
+分页信息说明 (data对象):
+- total:   总记录数
+- size:    每页显示的条数
+- current: 当前页码
+- pages:   总页数
