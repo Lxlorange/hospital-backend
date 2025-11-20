@@ -154,7 +154,8 @@ public class SpringSecurityConfig {
                                         "/webjars",
                                         "/doc.html",
                                         "/favicon.ico",
-                                        "/api/statistic/**"
+                                        "/api/statistic/**",
+                                        "/api/LLM/**"
                                 ).permitAll()
                         // 其他所有请求都需要认证
                         .anyRequest().authenticated()
