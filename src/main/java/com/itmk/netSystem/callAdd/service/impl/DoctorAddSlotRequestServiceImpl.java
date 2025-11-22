@@ -66,10 +66,10 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
             WxUser wxUser = userPatientPhoneService.getById(request.getUserId());
             String identity = wxUser != null ? wxUser.getIdentityStatus() : null;
             if (identity != null) {
-                String s = identity.trim();
-                if ("学生".equals(s)) {
+                String s = identity.trim().toLowerCase();
+                if ("学生".equals(identity) || "student".equals(s)) {
                     payPrice = originalPrice.multiply(new java.math.BigDecimal("0.05"));
-                } else if ("教师".equals(s)) {
+                } else if ("教师".equals(identity) || "老师".equals(identity) || "teacher".equals(s)) {
                     payPrice = originalPrice.multiply(new java.math.BigDecimal("0.10"));
                 }
             }

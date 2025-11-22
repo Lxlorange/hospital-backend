@@ -22,7 +22,16 @@ public class IdentityAuthServiceImpl extends ServiceImpl<IdentityAuthRequestMapp
         IdentityAuthRequest req = new IdentityAuthRequest();
         req.setUserId(userId);
         req.setUsername(username);
-        req.setType(userType);
+        String t = userType;
+        if (t != null) {
+            String s = t.trim().toLowerCase();
+            if ("student".equals(s) || "学生".equals(s)) {
+                t = "学生";
+            } else if ("teacher".equals(s) || "教师".equals(s) || "老师".equals(s)) {
+                t = "教师";
+            }
+        }
+        req.setType(t);
         req.setCode(cardNo);
         req.setFrontPhoto(cardFront);
         req.setBackPhoto(cardBack);
@@ -50,6 +59,14 @@ public class IdentityAuthServiceImpl extends ServiceImpl<IdentityAuthRequestMapp
             return false;
         }
         String identity = existing.getType();
+        if (identity != null) {
+            String s = identity.trim().toLowerCase();
+            if ("student".equals(s) || "学生".equals(s)) {
+                identity = "学生";
+            } else if ("teacher".equals(s) || "教师".equals(s) || "老师".equals(s)) {
+                identity = "教师";
+            }
+        }
         if (identity != null && !identity.trim().isEmpty()) {
             Integer userId = existing.getUserId();
             if (userId != null) {

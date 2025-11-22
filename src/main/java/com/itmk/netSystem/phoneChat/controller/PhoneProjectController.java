@@ -563,10 +563,10 @@ public class PhoneProjectController {
             WxUser wxUser = userPatientPhoneService.getById(makeOrde.getUserId());
             String identity = wxUser != null ? wxUser.getIdentityStatus() : null;
             if (identity != null) {
-                String s = identity.trim();
-                if ("学生".equals(s)) {
+                String s = identity.trim().toLowerCase();
+                if ("学生".equals(identity) || "student".equals(s)) {
                     payPrice = originalPrice.multiply(new BigDecimal("0.05"));
-                } else if ("教师".equals(s)) {
+                } else if ("教师".equals(identity) || "老师".equals(identity) || "teacher".equals(s)) {
                     payPrice = originalPrice.multiply(new BigDecimal("0.10"));
                 }
             }
@@ -859,10 +859,10 @@ public class PhoneProjectController {
             WxUser wxUser2 = userPatientPhoneService.getById(order.getUserId());
             String identity2 = wxUser2 != null ? wxUser2.getIdentityStatus() : null;
             if (identity2 != null) {
-                String s2 = identity2.trim();
-                if ("学生".equals(s2)) {
+                String s2 = identity2.trim().toLowerCase();
+                if ("学生".equals(identity2) || "student".equals(s2)) {
                     payPrice2 = originalPrice2.multiply(new BigDecimal("0.05"));
-                } else if ("教师".equals(s2)) {
+                } else if ("教师".equals(identity2) || "老师".equals(identity2) || "teacher".equals(s2)) {
                     payPrice2 = originalPrice2.multiply(new BigDecimal("0.10"));
                 }
             }
