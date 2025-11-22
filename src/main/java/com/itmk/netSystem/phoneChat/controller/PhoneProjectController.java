@@ -156,7 +156,54 @@ public class PhoneProjectController {
      */
     @PostMapping("/updateUserInfo")
     public ResultVo updateUserInfo(@RequestBody WxUser wxUser){
-        if(userPatientPhoneService.updateById(wxUser)){
+        if (wxUser == null || wxUser.getUserId() == null) {
+            return ResultUtils.error("参数错误");
+        }
+        WxUser existing = userPatientPhoneService.getById(wxUser.getUserId());
+        if (existing == null) {
+            return ResultUtils.error("用户不存在");
+        }
+        if (StringUtils.hasText(wxUser.getPhone())) {
+            String phone = wxUser.getPhone().trim();
+            if (!phone.matches("^\\d{11}$")) {
+                return ResultUtils.error("手机号格式不正确");
+            }
+            WxUser byPhone = userPatientPhoneService.findByPhone(phone);
+            if (byPhone != null && !byPhone.getUserId().equals(existing.getUserId())) {
+                return ResultUtils.error("手机号已被占用");
+            }
+            existing.setPhone(phone);
+        }
+        if (StringUtils.hasText(wxUser.getEmail())) {
+            String email = wxUser.getEmail().trim();
+            String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+            if (!email.matches(emailRegex)) {
+                return ResultUtils.error("邮箱格式不正确");
+            }
+            WxUser byEmail = userPatientPhoneService.findByEmail(email);
+            if (byEmail != null && !byEmail.getUserId().equals(existing.getUserId())) {
+                return ResultUtils.error("邮箱已被占用");
+            }
+            existing.setEmail(email);
+        }
+        if (StringUtils.hasText(wxUser.getNickName())) {
+            existing.setNickName(wxUser.getNickName().trim());
+        }
+        if (StringUtils.hasText(wxUser.getName())) {
+            existing.setName(wxUser.getName().trim());
+        }
+        if (StringUtils.hasText(wxUser.getSex())) {
+            String sex = wxUser.getSex().trim();
+            if (!("0".equals(sex) || "1".equals(sex))) {
+                return ResultUtils.error("性别参数错误");
+            }
+            existing.setSex(sex);
+        }
+        if (StringUtils.hasText(wxUser.getImage())) {
+            existing.setImage(wxUser.getImage().trim());
+        }
+        boolean ok = userPatientPhoneService.updateById(existing);
+        if (ok) {
             return ResultUtils.success("成功！");
         }
         return ResultUtils.error("失败!");
