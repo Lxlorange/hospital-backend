@@ -126,7 +126,21 @@ public class WaitlistServiceImpl extends ServiceImpl<WaitlistMapper, WaitlistEnt
         order.setStatus("1");
         order.setHasVisit("0");
         order.setHasCall("0");
-        order.setPrice(schedule.getPrice());
+        java.math.BigDecimal originalPrice = schedule.getPrice() == null ? java.math.BigDecimal.ZERO : schedule.getPrice();
+        java.math.BigDecimal payPrice = originalPrice;
+        try {
+            WxUser wxUser = userPatientPhoneService.getById(candidate.getUserId());
+            String identity = wxUser != null ? wxUser.getIdentityStatus() : null;
+            if (identity != null) {
+                String s = identity.trim();
+                if ("学生".equals(s)) {
+                    payPrice = originalPrice.multiply(new java.math.BigDecimal("0.05"));
+                } else if ("教师".equals(s)) {
+                    payPrice = originalPrice.multiply(new java.math.BigDecimal("0.10"));
+                }
+            }
+        } catch (Exception ignored) {}
+        order.setPrice(payPrice.setScale(2, java.math.RoundingMode.HALF_UP));
         try {
             String dateStr = schedule.getTimes() == null ? null : schedule.getTimes().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             order.setTimes(dateStr);

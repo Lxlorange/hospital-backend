@@ -46,6 +46,7 @@ public class UserPatientPhoneServiceImplement extends ServiceImpl<UserPatientPho
         // 对密码进行加密处理
         newUser.setPassword(DigestUtils.md5DigestAsHex(newUser.getPassword().getBytes()));
         newUser.setCreateTime(new Date());
+        newUser.setIdentityStatus("待认证");
         return this.save(newUser);
     }
 

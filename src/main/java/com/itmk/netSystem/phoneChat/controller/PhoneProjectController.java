@@ -556,8 +556,22 @@ public class PhoneProjectController {
             return ResultUtils.error("该就诊人已预约过该时段，请勿重复挂号!");
         }
 
-        // 价格校验：以后端数据库中的价格为准，防止前端篡改
-        makeOrde.setPrice(schedule.getPrice());
+        // 价格校验与实际支付金额计算：以后端数据库中的价格为准，结合用户身份计算折后实付
+        BigDecimal originalPrice = schedule.getPrice() == null ? BigDecimal.ZERO : schedule.getPrice();
+        BigDecimal payPrice = originalPrice;
+        try {
+            WxUser wxUser = userPatientPhoneService.getById(makeOrde.getUserId());
+            String identity = wxUser != null ? wxUser.getIdentityStatus() : null;
+            if (identity != null) {
+                String s = identity.trim();
+                if ("学生".equals(s)) {
+                    payPrice = originalPrice.multiply(new BigDecimal("0.05"));
+                } else if ("教师".equals(s)) {
+                    payPrice = originalPrice.multiply(new BigDecimal("0.10"));
+                }
+            }
+        } catch (Exception ignored) {}
+        makeOrde.setPrice(payPrice.setScale(2, java.math.RoundingMode.HALF_UP));
 
         // 设置订单初始状态
         makeOrde.setCreateTime(new Date());
@@ -839,7 +853,21 @@ public class PhoneProjectController {
             order.setTimesArea(String.valueOf(newSchedule.getTimeSlot()));
         }
         order.setWeek(newSchedule.getWeek());
-        order.setPrice(newSchedule.getPrice());
+        BigDecimal originalPrice2 = newSchedule.getPrice() == null ? BigDecimal.ZERO : newSchedule.getPrice();
+        BigDecimal payPrice2 = originalPrice2;
+        try {
+            WxUser wxUser2 = userPatientPhoneService.getById(order.getUserId());
+            String identity2 = wxUser2 != null ? wxUser2.getIdentityStatus() : null;
+            if (identity2 != null) {
+                String s2 = identity2.trim();
+                if ("学生".equals(s2)) {
+                    payPrice2 = originalPrice2.multiply(new BigDecimal("0.05"));
+                } else if ("教师".equals(s2)) {
+                    payPrice2 = originalPrice2.multiply(new BigDecimal("0.10"));
+                }
+            }
+        } catch (Exception ignored) {}
+        order.setPrice(payPrice2.setScale(2, java.math.RoundingMode.HALF_UP));
         order.setStatus("1"); // 改签后恢复为已预约状态
         order.setHasVisit("0");
         order.setHasCall("0");

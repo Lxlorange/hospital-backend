@@ -8,6 +8,8 @@ import com.itmk.netSystem.callAdd.entity.DoctorAddSlotRequest;
 import com.itmk.netSystem.callAdd.mapper.DoctorAddSlotRequestMapper;
 import com.itmk.netSystem.callAdd.service.DoctorAddSlotRequestService;
 import com.itmk.netSystem.schedule.service.ScheduleService;
+import com.itmk.netSystem.userPatientPhone.entity.WxUser;
+import com.itmk.netSystem.userPatientPhone.service.UserPatientPhoneService;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 import com.itmk.netSystem.setWork.service.setWorkService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,8 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
     private CallService callService;
     @Autowired
     private ScheduleService scheduleService;
+    @Autowired
+    private UserPatientPhoneService userPatientPhoneService;
 
     @Override
     @Transactional
@@ -56,7 +60,21 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
         order.setTimesArea(schedule.getTimeSlot() == null ? null : (schedule.getTimeSlot() == 0 ? "0" : "1"));
         order.setWeek(schedule.getWeek());
         order.setCreateTime(new Date());
-        order.setPrice(schedule.getPrice());
+        java.math.BigDecimal originalPrice = schedule.getPrice() == null ? java.math.BigDecimal.ZERO : schedule.getPrice();
+        java.math.BigDecimal payPrice = originalPrice;
+        try {
+            WxUser wxUser = userPatientPhoneService.getById(request.getUserId());
+            String identity = wxUser != null ? wxUser.getIdentityStatus() : null;
+            if (identity != null) {
+                String s = identity.trim();
+                if ("学生".equals(s)) {
+                    payPrice = originalPrice.multiply(new java.math.BigDecimal("0.05"));
+                } else if ("教师".equals(s)) {
+                    payPrice = originalPrice.multiply(new java.math.BigDecimal("0.10"));
+                }
+            }
+        } catch (Exception ignored) {}
+        order.setPrice(payPrice.setScale(2, java.math.RoundingMode.HALF_UP));
         order.setAddress(request.getAddress());
         order.setStatus("1"); // 已预约
         order.setHasVisit("0");

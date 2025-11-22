@@ -6,8 +6,10 @@ import com.itmk.netSystem.LLM.util.ChatPayloadBuilder;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import org.springframework.beans.InvalidPropertyException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,14 +39,19 @@ public class LLMServiceImpl extends ServiceImpl<LLMMapper, LLMstore> implements 
         ChatPayloadBuilder builder = new ChatPayloadBuilder(model, systemPrompt, finalMessage, 0.3);
         String payload = builder.build();
 
-        HttpResponse<String> response = Unirest.post("https://api.siliconflow.cn/v1/chat/completions")
-                .header("Authorization", "Bearer " + apiKey)
-                .header("Content-Type", "application/json")
-                .body(payload)
-                .asString();
-
-        String body = response.getBody();
-        return body;
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.siliconflow.cn/v1/chat/completions"))
+                    .header("Authorization", "Bearer " + apiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(payload))
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
+        } catch (Exception e) {
+            throw new IllegalStateException("调用 LLM 接口失败", e);
+        }
     }
     @Override
     public String getCommonQuestionLoads(Long id) throws IllegalArgumentException {
@@ -70,12 +77,19 @@ public class LLMServiceImpl extends ServiceImpl<LLMMapper, LLMstore> implements 
         ChatPayloadBuilder builder = new ChatPayloadBuilder(model, systemPrompt, finalMessage, 0.3);
         String payload = builder.build();
 
-        HttpResponse<String> response = Unirest.post("https://api.siliconflow.cn/v1/chat/completions")
-                .header("Authorization", "Bearer " + apiKey)
-                .header("Content-Type", "application/json")
-                .body(payload)
-                .asString();
-        return response.getBody();
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.siliconflow.cn/v1/chat/completions"))
+                    .header("Authorization", "Bearer " + apiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(payload))
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
+        } catch (Exception e) {
+            throw new IllegalStateException("调用 LLM 接口失败", e);
+        }
     }
 
     private String escape(String text) {

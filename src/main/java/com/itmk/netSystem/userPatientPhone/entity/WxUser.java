@@ -22,6 +22,7 @@ public class WxUser implements Serializable {
     private String email;
     private boolean status = true;
     private String password;
+    private String identityStatus;
 
     private Date createTime;
 
