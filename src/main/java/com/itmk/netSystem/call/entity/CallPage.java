@@ -10,6 +10,7 @@ public class CallPage {
     private Long pageSize;
 
     private Integer userId;
+    private Integer visitUserId;
     private Long doctorId;
     private String name;
     private String timesArea;
