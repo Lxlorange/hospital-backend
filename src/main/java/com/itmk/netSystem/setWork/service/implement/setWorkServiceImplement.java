@@ -12,7 +12,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.itmk.netSystem.phoneChat.entity.DoctorInformationNum;
 import org.springframework.stereotype.Service;
 
 
@@ -24,10 +23,6 @@ public class setWorkServiceImplement extends ServiceImpl<setWorkMapper, Schedule
         return this.baseMapper.getList(page,parm);
     }
 
-    @Override
-    public List<ScheduleDetail> selectById(DoctorInformationNum doctorInformationNum) {
-        return this.baseMapper.selectById(doctorInformationNum);
-    }
 
     @Override
     public List<ScheduleDetail> selectByWorkId(Integer workId) {
