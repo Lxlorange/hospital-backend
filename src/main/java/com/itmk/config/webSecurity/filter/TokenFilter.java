@@ -97,6 +97,16 @@ public class TokenFilter extends OncePerRequestFilter {
     }
 
     /**
+     * 判断是否应该跳过此过滤器
+     * 对于 /captcha/** 路径，完全跳过过滤器
+     */
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String uri = request.getRequestURI();
+        return uri.startsWith("/captcha");
+    }
+
+    /**
      * 过滤器的核心逻辑，每次请求都会经过此方法
      */
     @Override
@@ -106,7 +116,7 @@ public class TokenFilter extends OncePerRequestFilter {
             String uri = request.getRequestURI();
 
             if(!ignoreUrl.contains(uri) && !uri.contains("/images/") && !uri.startsWith("/wxapi/allApi/") && !uri.startsWith("/wxapi/allapi/") && !uri.contains("/swagger-ui/**") && !uri.contains("/swagger-ui.html") && !uri.contains("/swagger-resources/**") && !uri.contains("/v3/api-docs") && !uri.contains("/v2/api-docs") && !uri.contains("/webjars/**") && !uri.contains("/api/sysUser/api-docs") && !uri.contains("/webjars") && !uri.contains("/doc.html") && !uri.contains("/favicon.ico")
-                    && !uri.startsWith("/api/statistic/") && !uri.startsWith("/api/LLM")){
+                    && !uri.startsWith("/api/statistic/") && !uri.startsWith("/api/LLM")&& !uri.startsWith("/captcha")){
                 validateToken(request);
             }
         }catch (AuthenticationException e){

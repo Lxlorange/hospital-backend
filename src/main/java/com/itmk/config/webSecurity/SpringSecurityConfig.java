@@ -25,6 +25,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.Collections;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 
 // Spring Security配置类
 @Configuration
@@ -110,6 +111,15 @@ public class SpringSecurityConfig {
         };
     }
 
+    /**
+     * 配置 Web 安全自定义器
+     * 让 Spring Security 完全忽略 /captcha/** 的请求（不经过任何过滤器）
+     */
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/captcha/**");
+    }
+
 
     @Bean
     public AuthenticationManager authenticationManagerBean(AuthenticationConfiguration configuration) throws Exception {
@@ -155,7 +165,8 @@ public class SpringSecurityConfig {
                                         "/doc.html",
                                         "/favicon.ico",
                                         "/api/statistic/**",
-                                        "/api/LLM/**"
+                                        "/api/LLM/**",
+                                        "/captcha/**"
                                 ).permitAll()
                         // 其他所有请求都需要认证
                         .anyRequest().authenticated()
