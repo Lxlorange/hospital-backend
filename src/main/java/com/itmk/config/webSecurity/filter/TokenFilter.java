@@ -97,16 +97,6 @@ public class TokenFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 判断是否应该跳过此过滤器
-     * 对于 /captcha/** 路径，完全跳过过滤器
-     */
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String uri = request.getRequestURI();
-        return uri.startsWith("/captcha");
-    }
-
-    /**
      * 过滤器的核心逻辑，每次请求都会经过此方法
      */
     @Override

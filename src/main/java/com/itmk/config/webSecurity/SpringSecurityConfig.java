@@ -111,15 +111,6 @@ public class SpringSecurityConfig {
         };
     }
 
-    /**
-     * 配置 Web 安全自定义器
-     * 让 Spring Security 完全忽略 /captcha/** 的请求（不经过任何过滤器）
-     */
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/captcha/**");
-    }
-
 
     @Bean
     public AuthenticationManager authenticationManagerBean(AuthenticationConfiguration configuration) throws Exception {

@@ -1,4 +1,4 @@
-package com.itmk.config;
+package com.itmk.config.CaptchaConfig;
 
 import com.anji.captcha.model.common.Const;
 import com.anji.captcha.service.CaptchaService;
@@ -15,7 +15,7 @@ public class CaptchaConfig {
     public CaptchaService captchaService() {
         Properties config = new Properties();
 
-        // 1. 缓存类型：local (内存)
+        // 1. 缓存类型：内存
         config.put(Const.CAPTCHA_CACHETYPE, "local");
 
         // 2. 水印
@@ -27,10 +27,9 @@ public class CaptchaConfig {
         // 4. 滑动干扰
         config.put(Const.CAPTCHA_SLIP_OFFSET, "5");
 
-        // 5. 开启 AES (配合前端)
+        // 5. 开启 AES
         config.put(Const.CAPTCHA_AES_STATUS, "true");
 
-        // 使用 Jar 包里的工厂类创建实例
         return CaptchaServiceFactory.getInstance(config);
     }
 }

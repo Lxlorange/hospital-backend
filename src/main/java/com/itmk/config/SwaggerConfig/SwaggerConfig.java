@@ -1,4 +1,4 @@
-package com.itmk.config;
+package com.itmk.config.SwaggerConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -15,7 +15,7 @@ public class SwaggerConfig {
         return new Docket(DocumentationType.OAS_30) // 使用 OpenAPI 3.0
                 .apiInfo(apiInfo())
                 .select()
-// 指定扫描的包路径，这里我们指向你的 Controller
+                // 指定扫描的包路径，这里我们指向你的 Controller
                 .apis(RequestHandlerSelectors.basePackage("com.itmk.netSystem"))
                 .paths(PathSelectors.any())
                 .build();

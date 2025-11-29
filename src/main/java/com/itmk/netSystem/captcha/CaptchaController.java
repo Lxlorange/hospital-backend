@@ -19,7 +19,6 @@ public class CaptchaController {
 
     @PostMapping("/get")
     public ResponseModel get(@RequestBody CaptchaVO data, HttpServletRequest request) {
-        // 建议加上断言
         assert request.getRemoteHost() != null;
         data.setBrowserInfo(getRemoteId(request));
         return captchaService.get(data);
@@ -31,7 +30,7 @@ public class CaptchaController {
         return captchaService.check(data);
     }
 
-    // 辅助方法：获取客户端IP
+    // 获取客户端IP
     public static String getRemoteId(HttpServletRequest request) {
         String xfwd = request.getHeader("X-Forwarded-For");
         String ip = getRemoteIpFromXfwd(xfwd);
@@ -42,6 +41,7 @@ public class CaptchaController {
         return request.getRemoteAddr() + ua;
     }
 
+    // 辅助函数
     private static String getRemoteIpFromXfwd(String xfwd) {
         if (StringUtils.isNotBlank(xfwd)) {
             String[] ipList = xfwd.split(",");
