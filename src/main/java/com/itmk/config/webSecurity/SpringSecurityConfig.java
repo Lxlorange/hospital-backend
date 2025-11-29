@@ -143,6 +143,7 @@ public class SpringSecurityConfig {
                                         "/api/sysUser/login",
                                         "/api/upload/uploadImage",
                                         "/images/**",
+                                        "/api/images/**",
                                         "/wxapi/allApi/**",
                                         "/wxapi/allapi/**",
                                         "/swagger-ui/**",
