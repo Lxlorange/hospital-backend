@@ -1,5 +1,6 @@
 package com.itmk.netSystem.phoneChat.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
@@ -1029,6 +1030,44 @@ public class PhoneProjectController {
 
         IPage<MakeOrder> list = callService.page(page, query);
         return ResultUtils.success("查询成功", list);
+    }
+
+    @PostMapping("/reapply")
+    public ResultVo reapply(@RequestBody Map<String, Object> body) {
+        Integer makeId = null;
+        if (body != null) {
+            Object v = body.get("makeId");
+            if (v instanceof Number) {
+                makeId = ((Number) v).intValue();
+            } else if (v instanceof String) {
+                try { makeId = Integer.parseInt((String) v); } catch (Exception ignored) {}
+            }
+        }
+        if (makeId == null) {
+            return ResultUtils.error("缺少参数: makeId");
+        }
+        UpdateWrapper<MakeOrder> uw = new UpdateWrapper<>();
+        uw.lambda()
+                .eq(MakeOrder::getMakeId, makeId)
+                .set(MakeOrder::getHasCall, "1")
+                .set(MakeOrder::getMissed, "0")
+                .set(MakeOrder::getSignInStatus, "0")
+                .set(MakeOrder::getCalledTime, new java.util.Date())
+                .set(MakeOrder::getStatus, "1");
+        boolean ok = callService.update(null, uw);
+        if (ok) {
+            MakeOrder updated = callService.getById(makeId);
+            return ResultUtils.success("已申请重新排号", updated);
+        }
+        return ResultUtils.error("申请失败");
+    }
+
+    @PostMapping("/checkIn")
+    public ResultVo checkIn(@RequestBody MakeOrder makeOrder){
+        if (callService.checkIn(makeOrder.getMakeId())) {
+            return ResultUtils.success("成功!");
+        }
+        return ResultUtils.error("失败!");
     }
 
     /**

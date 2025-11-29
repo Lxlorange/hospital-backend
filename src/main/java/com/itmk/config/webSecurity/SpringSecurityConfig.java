@@ -145,6 +145,7 @@ public class SpringSecurityConfig {
                                         "/images/**",
                                         "/api/images/**",
                                         "/wxapi/allApi/**",
+                                        "/wxapi/allApi/reapply",
                                         "/wxapi/allapi/**",
                                         "/swagger-ui/**",
                                         "/swagger-ui.html",
