@@ -78,11 +78,8 @@ public class CustomerService implements UserDetailsService {
      * @return UserDetails
      */
     private UserDetails buildUserDetails(SysUser user) {
-        checkUserStatus(user); // 检查账户状态
-        List<SysMenu> menuList = "1".equals(user.getIsAdmin())
-                ? menuWebNetService.list()
-                : menuWebNetService.getMenuByUserId(user.getUserId());
-
+        checkUserStatus(user);
+        List<SysMenu> menuList = menuWebNetService.getMenuByUserId(user.getUserId());
         List<String> permissions = extractPermissionCodes(menuList);
         List<GrantedAuthority> authorities = mapToGrantedAuthorities(permissions);
         user.setAuthorities(authorities);
@@ -103,16 +100,7 @@ public class CustomerService implements UserDetailsService {
             throw new CustomerException("用户名错误");
         }
 
-        List<SysMenu> menuList = null;
-
-        // 判断是否是超级管理员
-        if (StringUtils.isNotEmpty(user.getIsAdmin()) && "1".equals(user.getIsAdmin())) {
-            // 超级管理员，查询所有菜单
-            menuList = menuWebNetService.list();
-        } else {
-            // 普通用户，查询用户拥有的菜单权限
-            menuList = menuWebNetService.getMenuByUserId(user.getUserId());
-        }
+        List<SysMenu> menuList = menuWebNetService.getMenuByUserId(user.getUserId());
 
         // 提取菜单表的 'code' 字段作为权限标识
         List<String> collect = Optional.ofNullable(menuList).orElse(new ArrayList<>())

@@ -158,14 +158,7 @@ public class userWebController {
         SysUser user = userWebService.getById(userId);
         List<SysMenu> menuList = null;
 
-        // 判断是否是超级管理员
-        if (StringUtils.isNotEmpty(user.getIsAdmin()) && "1".equals(user.getIsAdmin())) {
-            // 超级管理员，查询所有菜单
-            menuList = menuWebNetService.list();
-        } else {
-            // 普通用户，查询用户拥有的菜单
-            menuList = menuWebNetService.getMenuByUserId(user.getUserId());
-        }
+        menuList = menuWebNetService.getMenuByUserId(user.getUserId());
 
         // 提取菜单表的code字段作为权限标识
         List<String> collect = Optional.ofNullable(menuList).orElse(new ArrayList<>())
