@@ -24,7 +24,9 @@
 
 #### Body（示例）
 ```json
-12
+{
+  "days": 12
+}
 ```
 
 #### 成功响应示例
@@ -66,17 +68,14 @@
 
 - 接口路径（设置）: `/config/scheduleQueryTime`
 - 请求方式: `POST`
-- 参数传递方式：`query` 或 `x-www-form-urlencoded`
+- Content-Type: `application/json`
 
-#### 请求参数
-| 参数名 | 类型 | 是否必填 | 描述 |
-| :--- | :--- | :--- | :--- |
-| `hours` | Integer | 是 | 放号开始小时，范围 `0-23` |
-| `minutes` | Integer | 是 | 放号开始分钟，范围 `0-59` |
-
-#### 请求示例
-```
-POST http://localhost:8089/wxapi/allApi/config/scheduleQueryTime?hours=7&minutes=0
+#### Body（示例）
+```json
+{
+  "hours": 7,
+  "minutes": 0
+}
 ```
 
 #### 成功响应示例

@@ -96,7 +96,11 @@ public class PhoneProjectController {
     }
 
     @PostMapping("/config/scheduleQueryDays")
-    public ResultVo setScheduleQueryDays(@RequestBody Integer days) {
+    public ResultVo setScheduleQueryDays(@RequestBody Map<String, Integer> body) {
+        Integer days = body != null ? body.get("days") : null;
+        if (days == null) {
+            return ResultUtils.error("缺少参数: days");
+        }
         if (days < 1 || days > 60) {
             return ResultUtils.error("设置范围为1-60天");
         }
@@ -576,7 +580,12 @@ public class PhoneProjectController {
     }
 
     @PostMapping("/config/scheduleQueryTime")
-    public ResultVo setScheduleQueryTime(@RequestParam Integer hours,@RequestParam Integer minutes) {
+    public ResultVo setScheduleQueryTime(@RequestBody Map<String, Integer> body) {
+        Integer hours = body != null ? body.get("hours") : null;
+        Integer minutes = body != null ? body.get("minutes") : null;
+        if (hours == null || minutes == null) {
+            return ResultUtils.error("缺少参数: hours 或 minutes");
+        }
         if (hours < 0 || hours >= 24) {
             return ResultUtils.error("设置范围为0-23时");
         }
@@ -1179,4 +1188,3 @@ public class PhoneProjectController {
         return ResultUtils.error("新增失败!");
     }
 }
-
