@@ -1,18 +1,17 @@
 package com.itmk.netSystem.LLM.service;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itmk.netSystem.LLM.entity.LLMstore;
 import com.itmk.netSystem.LLM.mapper.LLMMapper;
 import com.itmk.netSystem.LLM.util.ChatPayloadBuilder;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import org.springframework.beans.InvalidPropertyException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 @Service
 public class LLMServiceImpl extends ServiceImpl<LLMMapper, LLMstore> implements LLMService {

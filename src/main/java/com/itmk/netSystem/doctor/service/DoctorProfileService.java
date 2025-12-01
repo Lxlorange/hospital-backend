@@ -1,11 +1,7 @@
 package com.itmk.netSystem.doctor.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.itmk.netSystem.doctor.entity.DoctorProfileVo;
-import com.itmk.netSystem.userWeb.entity.SysUser;
-
-import java.util.List;
 
 /**
  * 医生个人主页服务接口

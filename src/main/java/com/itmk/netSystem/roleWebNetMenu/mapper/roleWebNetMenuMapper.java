@@ -13,14 +13,14 @@ public interface roleWebNetMenuMapper extends BaseMapper<RoleMenu> {
      * @param roleIds 角色ID列表
      * @return 影响的行数
      */
-    int deleteByRoleIds(@Param("roleIds") java.util.List<Long> roleIds);
+    int deleteByRoleIds(@Param("roleIds") List<Long> roleIds);
 
     /**
      * 根据菜单ID列表批量删除其所有角色关联.
      * @param menuIds 菜单ID列表
      * @return 影响的行数
      */
-    int deleteByMenuIds(@Param("menuIds") java.util.List<Long> menuIds);
+    int deleteByMenuIds(@Param("menuIds") List<Long> menuIds);
 
     /**
      * 查询拥有指定所有菜单权限的角色ID列表.
@@ -29,18 +29,18 @@ public interface roleWebNetMenuMapper extends BaseMapper<RoleMenu> {
      * @param menuIds 必须拥有的菜单ID列表
      * @return 符合条件的角色ID列表
      */
-    java.util.List<Long> findRoleIdsWithAllMenus(@Param("menuIds") java.util.List<Long> menuIds);
+    List<Long> findRoleIdsWithAllMenus(@Param("menuIds") List<Long> menuIds);
 
     /**
      * 统计每个角色拥有的菜单权限数量.
      * @return 一个Map列表，每个Map包含 "roleId" 和 "menuCount"
      */
-    java.util.List<java.util.Map<String, Object>> countMenusPerRole();
+    List<java.util.Map<String, Object>> countMenusPerRole();
 
     /**
      * 查找没有任何菜单权限的空角色ID列表.
      * @return 空角色的ID列表
      */
-    java.util.List<Long> findRolesWithNoMenus();
+    List<Long> findRolesWithNoMenus();
     boolean saveRoleMenu(@Param("roleId") Long roleId, @Param("menuIds")List<Long> menuIds);
 }

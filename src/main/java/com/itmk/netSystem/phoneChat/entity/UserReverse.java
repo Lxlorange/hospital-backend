@@ -52,7 +52,7 @@ public class UserReverse {
      * @return 如果price不为null且大于0，则返回true。
      */
     public boolean isPriceSet() {
-        return this.price != null && this.price.compareTo(java.math.BigDecimal.ZERO) > 0;
+        return this.price != null && this.price.compareTo(BigDecimal.ZERO) > 0;
     }
 
     /**

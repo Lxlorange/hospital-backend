@@ -1,11 +1,10 @@
 package com.itmk.netSystem.doctor.controller;
 
-import com.itmk.utils.ResultUtils;
-import com.itmk.utils.ResultVo;
 import com.itmk.netSystem.doctor.entity.DoctorProfileVo;
 import com.itmk.netSystem.doctor.service.DoctorProfileService;
+import com.itmk.utils.ResultUtils;
+import com.itmk.utils.ResultVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**

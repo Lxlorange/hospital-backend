@@ -3,11 +3,12 @@ package com.itmk.netSystem.doctor.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
-import com.itmk.netSystem.teamDepartment.entity.Department;
 import com.itmk.netSystem.doctor.entity.DoctorProfileVo;
+import com.itmk.netSystem.doctor.entity.DoctorUpdateRequest;
 import com.itmk.netSystem.doctor.mapper.DoctorProfileMapper;
 import com.itmk.netSystem.doctor.service.DoctorProfileService;
 import com.itmk.netSystem.doctor.service.DoctorUpdateRequestService;
+import com.itmk.netSystem.teamDepartment.entity.Department;
 import com.itmk.netSystem.userWeb.entity.SysUser;
 import com.itmk.netSystem.userWeb.service.userWebService;
 import org.springframework.beans.BeanUtils;
@@ -16,7 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.itmk.netSystem.doctor.entity.DoctorUpdateRequest;
 /**
  * 医生个人主页服务实现
  */

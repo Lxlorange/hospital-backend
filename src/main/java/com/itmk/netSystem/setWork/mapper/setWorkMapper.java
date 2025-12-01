@@ -1,6 +1,5 @@
 package com.itmk.netSystem.setWork.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.yulichang.base.MPJBaseMapper;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
@@ -18,7 +17,7 @@ public interface setWorkMapper extends MPJBaseMapper<ScheduleDetail> {
      * @param scheduleIds 需要取消的排班ID列表
      * @return 影响的行数
      */
-    int batchCancelSchedules(@Param("scheduleIds") java.util.List<Integer> scheduleIds);
+    int batchCancelSchedules(@Param("scheduleIds") List<Integer> scheduleIds);
 
     /**
      * 根据科室和日期聚合查询排班统计信息.
@@ -33,7 +32,7 @@ public interface setWorkMapper extends MPJBaseMapper<ScheduleDetail> {
      * @param date 查询日期 (格式: yyyy-MM-dd)
      * @return 医生用户对象列表
      */
-    java.util.List<com.itmk.netSystem.userWeb.entity.SysUser> findDoctorsWithoutSchedule(@Param("date") String date);
+    List<com.itmk.netSystem.userWeb.entity.SysUser> findDoctorsWithoutSchedule(@Param("date") String date);
 
     /**
      * 查询指定日期范围内有排班的所有医生ID.
@@ -41,13 +40,13 @@ public interface setWorkMapper extends MPJBaseMapper<ScheduleDetail> {
      * @param endDate   结束日期
      * @return 有排班的医生ID列表
      */
-    java.util.List<Long> findScheduledDoctorIdsByDateRange(@Param("startDate") String startDate, @Param("endDate") String endDate);
+    List<Long> findScheduledDoctorIdsByDateRange(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
     /**
      * 查找重复的排班数据 (同一医生在同一天被安排了多次).
      * @return 重复排班的列表，包含医生ID，日期和重复次数
      */
-    java.util.List<java.util.Map<String, Object>> findDuplicateSchedules();
+    List<java.util.Map<String, Object>> findDuplicateSchedules();
     void addCount(@Param("scheduleId") Integer scheduleId);
     void subCount(@Param("scheduleId") Integer scheduleId);
 

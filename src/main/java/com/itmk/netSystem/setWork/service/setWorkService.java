@@ -17,7 +17,7 @@ public interface setWorkService extends IService<ScheduleDetail> {
      * @param endDate   结束日期
      * @return 排班详情列表
      */
-    java.util.List<ScheduleDetail> findSchedulesByDoctorAndDateRange(Long doctorId, String startDate, String endDate);
+    List<ScheduleDetail> findSchedulesByDoctorAndDateRange(Long doctorId, String startDate, String endDate);
 
     /**
      * 复制指定医生某一周的排班到目标周

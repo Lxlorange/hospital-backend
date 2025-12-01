@@ -14,7 +14,7 @@ public class Evaluate {
      */
     public boolean hasNameFilter(){
         // 使用 org.apache.commons.lang.StringUtils 保持一致性
-        return org.apache.commons.lang.StringUtils.isNotEmpty(this.name);
+        return org.apache.commons.lang3.StringUtils.isNotEmpty(this.name);
     }
 
     /**
