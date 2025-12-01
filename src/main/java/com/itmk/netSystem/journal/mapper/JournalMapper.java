@@ -3,8 +3,9 @@ package com.itmk.netSystem.journal.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.itmk.netSystem.journal.entity.News;
 import org.apache.ibatis.annotations.Param;
-import java.util.List;
+
 import java.util.Date;
+import java.util.List;
  
 public interface JournalMapper extends BaseMapper<News> {
     List<News> findIndexNews();

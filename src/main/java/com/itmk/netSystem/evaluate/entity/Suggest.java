@@ -1,10 +1,12 @@
 package com.itmk.netSystem.evaluate.entity;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -38,7 +40,7 @@ public class Suggest implements Serializable {
      * (在执行新增操作前手动调用)
      */
     public void updateCreateTime() {
-        this.createTime = new java.util.Date();
+        this.createTime = new Date();
     }
 
     /**

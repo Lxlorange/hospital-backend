@@ -2,9 +2,9 @@ package com.itmk.netSystem.setWork.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.itmk.netSystem.phoneChat.entity.DoctorInformationNum;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 import com.itmk.netSystem.setWork.entity.setWorkPage;
-import com.itmk.netSystem.phoneChat.entity.DoctorInformationNum;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public interface setWorkService extends IService<ScheduleDetail> {
      * @param endDate   结束日期
      * @return 排班详情列表
      */
-    java.util.List<ScheduleDetail> findSchedulesByDoctorAndDateRange(Long doctorId, String startDate, String endDate);
+    List<ScheduleDetail> findSchedulesByDoctorAndDateRange(Long doctorId, String startDate, String endDate);
 
     /**
      * 复制指定医生某一周的排班到目标周

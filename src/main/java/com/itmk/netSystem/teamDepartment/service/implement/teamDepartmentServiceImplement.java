@@ -1,11 +1,12 @@
 package com.itmk.netSystem.teamDepartment.service.implement;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.itmk.netSystem.teamDepartment.entity.Department;
 import com.itmk.netSystem.teamDepartment.mapper.teamDepartmentMapper;
 import com.itmk.netSystem.teamDepartment.service.teamDepartmentService;
 import org.springframework.stereotype.Service;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+
 import java.util.List;
  
 @Service

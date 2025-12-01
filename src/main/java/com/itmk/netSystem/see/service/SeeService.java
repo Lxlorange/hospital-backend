@@ -1,9 +1,7 @@
 package com.itmk.netSystem.see.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.itmk.netSystem.see.entity.MakeOrderVisit;
-import com.itmk.netSystem.see.entity.SeePage;
 
 
 public interface SeeService extends IService<MakeOrderVisit> {

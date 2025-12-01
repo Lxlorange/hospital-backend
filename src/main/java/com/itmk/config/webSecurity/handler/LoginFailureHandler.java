@@ -14,7 +14,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-
 import java.io.IOException;
 
 // 自定义认证失败处理器 (处理匿名用户访问受保护资源时的异常)

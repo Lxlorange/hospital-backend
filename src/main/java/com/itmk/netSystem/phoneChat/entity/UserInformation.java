@@ -41,7 +41,7 @@ public class UserInformation {
      * 获取所有医生的姓名列表。
      * @return 一个包含所有医生姓名的字符串列表。
      */
-    public java.util.List<String> getDoctorNames() {
+    public List<String> getDoctorNames() {
         if (hasDoctors()) {
             return this.desc.stream().map(UserReverse::getNickName).collect(java.util.stream.Collectors.toList());
         }

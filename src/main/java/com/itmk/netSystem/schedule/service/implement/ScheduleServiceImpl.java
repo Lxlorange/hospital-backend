@@ -1,12 +1,12 @@
 package com.itmk.netSystem.schedule.service.implement;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
-import com.itmk.netSystem.call.entity.MakeOrder;
 import com.itmk.netSystem.call.service.CallService;
-import com.itmk.netSystem.schedule.entity.*;
-import com.itmk.netSystem.schedule.mapper.*;
+import com.itmk.netSystem.schedule.entity.ScheduleTemplate;
+import com.itmk.netSystem.schedule.entity.TemplateSlot;
+import com.itmk.netSystem.schedule.mapper.ScheduleTemplateMapper;
+import com.itmk.netSystem.schedule.mapper.TemplateSlotMapper;
 import com.itmk.netSystem.schedule.service.ScheduleService;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 import com.itmk.netSystem.setWork.mapper.setWorkMapper;
@@ -37,7 +37,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Autowired private CallService callService;
 
     // 注入用于关联查询的Mapper
-    @Autowired private com.itmk.netSystem.userWeb.mapper.userWebMapper sysUserMapper;
+    @Autowired private userWebMapper sysUserMapper;
     @Autowired private com.itmk.netSystem.teamDepartment.mapper.teamDepartmentMapper departmentMapper;
 
     //获得某个医生的所有排班模板

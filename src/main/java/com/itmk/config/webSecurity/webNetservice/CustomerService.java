@@ -5,7 +5,7 @@ import com.itmk.netSystem.menuWebNet.entity.SysMenu;
 import com.itmk.netSystem.menuWebNet.service.menuWebNetService;
 import com.itmk.netSystem.userWeb.entity.SysUser;
 import com.itmk.netSystem.userWeb.service.userWebService;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;

@@ -6,21 +6,23 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.google.code.kaptcha.impl.DefaultKaptcha;
+import com.itmk.netSystem.menuWebNet.entity.AssignTree;
+import com.itmk.netSystem.menuWebNet.entity.AssignTreeNum;
+import com.itmk.netSystem.menuWebNet.entity.SysMenu;
+import com.itmk.netSystem.menuWebNet.service.menuWebNetService;
+import com.itmk.netSystem.netRole.entity.SysUserRole;
+import com.itmk.netSystem.netRole.service.NetRoleService;
+import com.itmk.netSystem.teamDepartment.entity.Department;
+import com.itmk.netSystem.teamDepartment.entity.teamDepartment;
+import com.itmk.netSystem.userWeb.entity.*;
+import com.itmk.netSystem.userWeb.service.userWebService;
 import com.itmk.tool.Utils;
 import com.itmk.utils.ResultUtils;
 import com.itmk.utils.ResultVo;
-import com.itmk.netSystem.teamDepartment.entity.Department;
-import com.itmk.netSystem.teamDepartment.entity.teamDepartment;
-import com.itmk.netSystem.menuWebNet.entity.AssignTreeNum;
-import com.itmk.netSystem.menuWebNet.entity.AssignTree;
-import com.itmk.netSystem.menuWebNet.entity.SysMenu;
-import com.itmk.netSystem.menuWebNet.service.menuWebNetService;
-import com.itmk.netSystem.userWeb.entity.*;
-import com.itmk.netSystem.userWeb.service.userWebService;
-import com.itmk.netSystem.netRole.entity.SysUserRole;
-import com.itmk.netSystem.netRole.service.NetRoleService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,13 +34,9 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -105,7 +103,7 @@ public class userWebController {
      * 获取图片验证码
      */
     @PostMapping("/getImage")
-    public ResultVo imageCode(jakarta.servlet.http.HttpServletRequest request) {
+    public ResultVo imageCode(HttpServletRequest request) {
         // 获取session
         jakarta.servlet.http.HttpSession session = request.getSession();
         // 生成验证码文本

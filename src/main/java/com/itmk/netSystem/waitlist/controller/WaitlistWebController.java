@@ -1,23 +1,29 @@
 package com.itmk.netSystem.waitlist.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.itmk.utils.ResultUtils;
-import com.itmk.utils.ResultVo;
-import com.itmk.netSystem.waitlist.entity.WaitlistEntry;
-import com.itmk.netSystem.waitlist.service.WaitlistService;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 import com.itmk.netSystem.setWork.service.setWorkService;
-import com.itmk.netSystem.userWeb.entity.SysUser;
-import com.itmk.netSystem.userWeb.service.userWebService;
-import com.itmk.netSystem.treatpatient.entity.VisitUser;
-import com.itmk.netSystem.treatpatient.service.TreatPatientService;
 import com.itmk.netSystem.teamDepartment.entity.Department;
 import com.itmk.netSystem.teamDepartment.service.teamDepartmentService;
+import com.itmk.netSystem.treatpatient.entity.VisitUser;
+import com.itmk.netSystem.treatpatient.service.TreatPatientService;
+import com.itmk.netSystem.userWeb.entity.SysUser;
+import com.itmk.netSystem.userWeb.service.userWebService;
+import com.itmk.netSystem.waitlist.entity.WaitlistEntry;
+import com.itmk.netSystem.waitlist.service.WaitlistService;
+import com.itmk.utils.ResultUtils;
+import com.itmk.utils.ResultVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -112,29 +118,29 @@ public class WaitlistWebController {
             list = list.stream().filter(e -> {
                 VisitUser v = treatPatientService.getById(e.getVisitUserId());
                 return v != null && v.getVisitname() != null && v.getVisitname().contains(name);
-            }).collect(java.util.stream.Collectors.toList());
+            }).collect(Collectors.toList());
         }
 
-        java.time.format.DateTimeFormatter df = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        java.util.List<java.util.Map<String, Object>> data = new java.util.ArrayList<>();
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        List<Map<String, Object>> data = new ArrayList<>();
         for (WaitlistEntry e : list) {
-            java.util.Map<String, Object> m = new java.util.HashMap<>();
+            Map<String, Object> m = new HashMap<>();
             m.put("id", e.getId());
             m.put("scheduleId", e.getScheduleId());
             m.put("userId", e.getUserId());
             m.put("visitUserId", e.getVisitUserId());
-            com.itmk.netSystem.treatpatient.entity.VisitUser v = treatPatientService.getById(e.getVisitUserId());
+            VisitUser v = treatPatientService.getById(e.getVisitUserId());
             m.put("visitname", v != null ? v.getVisitname() : "");
-            com.itmk.netSystem.userWeb.entity.SysUser d = userWebService.getById(e.getDoctorId());
+            SysUser d = userWebService.getById(e.getDoctorId());
             m.put("doctorId", e.getDoctorId());
             m.put("doctorName", d != null ? d.getNickName() : "");
             String deptName = "";
             if (d != null && d.getDeptId() != null) {
-                com.itmk.netSystem.teamDepartment.entity.Department dept = teamDepartmentService.getById(d.getDeptId());
+                Department dept = teamDepartmentService.getById(d.getDeptId());
                 if (dept != null) deptName = dept.getDeptName();
             }
             m.put("deptName", deptName);
-            com.itmk.netSystem.setWork.entity.ScheduleDetail sd = setWorkService.selectByWorkId(e.getScheduleId()).get(0);
+            ScheduleDetail sd = setWorkService.selectByWorkId(e.getScheduleId()).get(0);
             String times = "";
             String timesAreaLabel = "";
             String week = "";

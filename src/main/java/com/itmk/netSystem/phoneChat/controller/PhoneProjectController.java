@@ -1,4 +1,5 @@
 package com.itmk.netSystem.phoneChat.controller;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -7,30 +8,30 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.RateLimiter;
 import com.itmk.config.service.GeetestService;
+import com.itmk.netSystem.call.entity.CallPage;
+import com.itmk.netSystem.call.entity.MakeOrder;
+import com.itmk.netSystem.call.service.CallService;
 import com.itmk.netSystem.evaluate.entity.Suggest;
 import com.itmk.netSystem.evaluate.service.EvaluateService;
-import com.itmk.tool.Utils;
-import com.itmk.utils.ResultUtils;
-import com.itmk.utils.ResultVo;
-import com.itmk.netSystem.teamDepartment.entity.Department;
-import com.itmk.netSystem.teamDepartment.service.teamDepartmentService;
-import com.itmk.netSystem.call.entity.MakeOrder;
-import com.itmk.netSystem.call.entity.CallPage;
-import com.itmk.netSystem.call.service.CallService;
-import com.itmk.netSystem.see.entity.MakeOrderVisit;
-import com.itmk.netSystem.see.service.SeeService;
 import com.itmk.netSystem.journal.entity.News;
 import com.itmk.netSystem.journal.service.JournalService;
 import com.itmk.netSystem.phoneChat.entity.*;
-import com.itmk.netSystem.waitlist.service.WaitlistService;
+import com.itmk.netSystem.see.entity.MakeOrderVisit;
+import com.itmk.netSystem.see.service.SeeService;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 import com.itmk.netSystem.setWork.service.setWorkService;
-import com.itmk.netSystem.userWeb.entity.SysUser;
-import com.itmk.netSystem.userWeb.service.userWebService;
+import com.itmk.netSystem.teamDepartment.entity.Department;
+import com.itmk.netSystem.teamDepartment.service.teamDepartmentService;
 import com.itmk.netSystem.treatpatient.entity.VisitUser;
 import com.itmk.netSystem.treatpatient.service.TreatPatientService;
 import com.itmk.netSystem.userPatientPhone.entity.WxUser;
 import com.itmk.netSystem.userPatientPhone.service.UserPatientPhoneService;
+import com.itmk.netSystem.userWeb.entity.SysUser;
+import com.itmk.netSystem.userWeb.service.userWebService;
+import com.itmk.netSystem.waitlist.service.WaitlistService;
+import com.itmk.tool.Utils;
+import com.itmk.utils.ResultUtils;
+import com.itmk.utils.ResultVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -764,7 +765,7 @@ public class PhoneProjectController {
             return ResultUtils.error("参数不完整");
         }
         // 校验排班
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<ScheduleDetail> q = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<ScheduleDetail> q = new QueryWrapper<>();
         q.lambda().eq(ScheduleDetail::getScheduleId, req.getScheduleId());
         ScheduleDetail schedule = setWorkService.getOne(q);
         if (schedule == null) {
@@ -800,26 +801,26 @@ public class PhoneProjectController {
                                @RequestParam(value = "status", required = false) String status) {
         QueryWrapper<com.itmk.netSystem.waitlist.entity.WaitlistEntry> q = new QueryWrapper<>();
         q.lambda().eq(com.itmk.netSystem.waitlist.entity.WaitlistEntry::getUserId, userId);
-        if (org.springframework.util.StringUtils.hasText(status)) {
+        if (StringUtils.hasText(status)) {
             q.lambda().eq(com.itmk.netSystem.waitlist.entity.WaitlistEntry::getStatus, status);
         }
         q.lambda().orderByDesc(com.itmk.netSystem.waitlist.entity.WaitlistEntry::getCreateTime);
-        java.util.List<com.itmk.netSystem.waitlist.entity.WaitlistEntry> list = waitlistService.list(q);
+        List<com.itmk.netSystem.waitlist.entity.WaitlistEntry> list = waitlistService.list(q);
 
-        java.time.format.DateTimeFormatter df = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        java.util.List<java.util.Map<String, Object>> data = new java.util.ArrayList<>();
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        List<Map<String, Object>> data = new ArrayList<>();
         for (com.itmk.netSystem.waitlist.entity.WaitlistEntry e : list) {
-            java.util.Map<String, Object> m = new java.util.HashMap<>();
+            Map<String, Object> m = new HashMap<>();
             m.put("id", e.getId());
             m.put("scheduleId", e.getScheduleId());
             m.put("doctorId", e.getDoctorId());
             m.put("userId", e.getUserId());
             m.put("visitUserId", e.getVisitUserId());
-            com.itmk.netSystem.treatpatient.entity.VisitUser v = treatPatientService.getById(e.getVisitUserId());
+            VisitUser v = treatPatientService.getById(e.getVisitUserId());
             m.put("visitname", v != null ? v.getVisitname() : "");
-            com.itmk.netSystem.userWeb.entity.SysUser d = userWebService.getById(e.getDoctorId());
+            SysUser d = userWebService.getById(e.getDoctorId());
             m.put("doctorName", d != null ? d.getNickName() : "");
-            com.itmk.netSystem.teamDepartment.entity.Department dept = null;
+            Department dept = null;
             if (d != null && d.getDeptId() != null) {
                 dept = teamDepartmentService.getById(d.getDeptId());
             }
