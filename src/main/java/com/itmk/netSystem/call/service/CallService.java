@@ -17,4 +17,5 @@ public interface CallService extends IService<MakeOrder> {
 
     IPage<MakeOrder> getAppointmentHistoryByUserId(IPage<MakeOrder> page, Integer userId);
     void callVisit(MakeOrder makeOrder);
+    boolean checkIn(Integer makeId);
 }

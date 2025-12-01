@@ -63,9 +63,14 @@ public class CallServiceImplement extends ServiceImpl<CallMapper, MakeOrder> imp
     @Override
     @Transactional
     public void callVisit(MakeOrder makeOrder) {
-
-        makeOrder.setHasCall("1");
-        this.baseMapper.updateById(makeOrder);
+        com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<MakeOrder> uw = new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<>();
+        uw.lambda()
+                .eq(MakeOrder::getMakeId, makeOrder.getMakeId())
+                .set(MakeOrder::getHasCall, "1")
+                .set(MakeOrder::getCalledTime, new Date())
+                .set(MakeOrder::getMissed, "0")
+                .set(MakeOrder::getStatus, "1");
+        this.baseMapper.update(null, uw);
 
         QueryWrapper<MakeOrderVisit> query = new QueryWrapper<>();
         query.lambda().eq(MakeOrderVisit::getMakeId,makeOrder.getMakeId())
@@ -81,5 +86,16 @@ public class CallServiceImplement extends ServiceImpl<CallMapper, MakeOrder> imp
             seeService.save(visit);
         }
 
+    }
+
+    @Override
+    @Transactional
+    public boolean checkIn(Integer makeId) {
+        MakeOrder update = new MakeOrder();
+        update.setMakeId(makeId);
+        update.setSignInStatus("1");
+        update.setSignInTime(new Date());
+        update.setMissed("0");
+        return this.baseMapper.updateById(update) > 0;
     }
 }

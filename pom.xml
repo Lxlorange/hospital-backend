@@ -117,7 +117,15 @@
             <artifactId>fastjson</artifactId>
             <version>1.2.83</version> <!-- 使用你查找到的最新版本 -->
         </dependency>
+        <dependency>
 
+            <groupId>com.anji-plus</groupId>
+
+            <artifactId>captcha-spring-boot-starter</artifactId>
+
+            <version>1.4.0</version>
+
+        </dependency>
     </dependencies>
 
     <build>

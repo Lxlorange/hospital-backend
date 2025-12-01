@@ -34,7 +34,8 @@ public class CallController {
     @PreAuthorize("hasAuthority('sys:makeOrder:call')")
     public ResultVo callVisit(@RequestBody MakeOrder makeOrder){
         callService.callVisit(makeOrder);
-        return ResultUtils.success("叫号");
+        MakeOrder updated = callService.getMakeOrderDetail(makeOrder.getMakeId());
+        return ResultUtils.success("叫号", updated);
     }
 
     @GetMapping("/{makeId}")
@@ -105,9 +106,21 @@ public class CallController {
                 .like(StringUtils.isNotEmpty(parm.getName()),SysUser::getNickName,parm.getName())
                 .eq(!user.getIsAdmin().equals("1"),MakeOrder::getDoctorId,parm.getDoctorId())
                 .eq(StringUtils.isNotEmpty(parm.getTimesArea()),MakeOrder::getTimesArea,parm.getTimesArea())
-                .orderByDesc(MakeOrder::getCreateTime);
+                .orderByAsc(MakeOrder::getTimes)
+                .orderByAsc(MakeOrder::getTimesArea)
+                .orderByAsc(MakeOrder::getCreateTime)
+                .orderByAsc(MakeOrder::getMakeId);
         IPage<MakeOrder> list = callService.page(page, query);
         return ResultUtils.success("成功",list);
+    }
+
+    @PostMapping("/checkIn")
+    @PreAuthorize("hasAuthority('sys:makeOrder:call')")
+    public ResultVo checkIn(@RequestBody MakeOrder makeOrder) {
+        if (callService.checkIn(makeOrder.getMakeId())) {
+            return ResultUtils.success("签到成功!");
+        }
+        return ResultUtils.error("签到失败!");
     }
 
     /**

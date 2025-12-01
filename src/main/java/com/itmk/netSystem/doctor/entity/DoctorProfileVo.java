@@ -1,6 +1,8 @@
 package com.itmk.netSystem.doctor.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -12,6 +14,7 @@ import java.util.Date;
 @Data
 public class DoctorProfileVo {
     /** 医生ID */
+    @TableId(type = IdType.AUTO)
     private Long userId;
     
     /** 用户名 */

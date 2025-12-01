@@ -25,6 +25,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Collections;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 
 // Spring Security配置类
 @Configuration
@@ -142,7 +143,9 @@ public class SpringSecurityConfig {
                                         "/api/sysUser/login",
                                         "/api/upload/uploadImage",
                                         "/images/**",
+                                        "/api/images/**",
                                         "/wxapi/allApi/**",
+                                        "/wxapi/allApi/reapply",
                                         "/wxapi/allapi/**",
                                         "/swagger-ui/**",
                                         "/swagger-ui.html",
@@ -155,7 +158,8 @@ public class SpringSecurityConfig {
                                         "/doc.html",
                                         "/favicon.ico",
                                         "/api/statistic/**",
-                                        "/api/LLM/**"
+                                        "/api/LLM/**",
+                                        "/captcha/**"
                                 ).permitAll()
                         // 其他所有请求都需要认证
                         .anyRequest().authenticated()

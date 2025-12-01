@@ -88,5 +88,7 @@ public class MvConfiguration implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/images/**")
                 .addResourceLocations(loadPath);
+        registry.addResourceHandler("/api/images/**")
+                .addResourceLocations(loadPath);
     }
 }

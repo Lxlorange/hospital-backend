@@ -1,20 +1,18 @@
 package com.itmk.netSystem.setWork.service.implement;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.itmk.netSystem.phoneChat.entity.DoctorInformationNum;
 import com.itmk.netSystem.setWork.entity.ScheduleDetail;
 import com.itmk.netSystem.setWork.entity.setWorkPage;
 import com.itmk.netSystem.setWork.mapper.setWorkMapper;
 import com.itmk.netSystem.setWork.service.setWorkService;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.springframework.stereotype.Service;
 
 
 @Service
@@ -25,10 +23,6 @@ public class setWorkServiceImplement extends ServiceImpl<setWorkMapper, Schedule
         return this.baseMapper.getList(page,parm);
     }
 
-    @Override
-    public List<ScheduleDetail> selectById(DoctorInformationNum doctorInformationNum) {
-        return this.baseMapper.selectById(doctorInformationNum);
-    }
 
     @Override
     public List<ScheduleDetail> selectByWorkId(Integer workId) {

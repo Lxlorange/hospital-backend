@@ -62,20 +62,8 @@ public class menuWebNetController {
      */
     @GetMapping("/getMenuList")
     public ResultVo getMenuList(Long userId){
-        // 获取用户的信息
         SysUser user = userWebService.getById(userId);
-        List<SysMenu> menuList = null;
-
-        // 判断是否是超级管理员
-        if(StringUtils.isNotEmpty(user.getIsAdmin()) && "1".equals(user.getIsAdmin())){
-            // 超级管理员：查询所有菜单
-            QueryWrapper<SysMenu> query = new QueryWrapper<>();
-            query.lambda().orderByAsc(SysMenu::getOrderNum);
-            menuList = menuWebNetService.list(query);
-        }else{
-            // 普通用户：根据用户权限查询菜单
-            menuList = menuWebNetService.getMenuByUserId(userId);
-        }
+        List<SysMenu> menuList = menuWebNetService.getMenuByUserId(user.getUserId());
 
         // 过滤菜单数据，去掉按钮数据 (类型为 '2')
         List<SysMenu> collect = Optional.ofNullable(menuList).orElse(new ArrayList<>())

@@ -46,6 +46,19 @@ public class MakeOrder implements Serializable {
 
     private String hasVisit;
 
+    @TableField("called_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date calledTime;
+
+    @TableField("sign_in_status")
+    private String signInStatus;
+
+    @TableField("sign_in_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date signInTime;
+
+    private String missed;
+
     @TableField(exist = false)
     private String visitname;
     @TableField(exist = false)

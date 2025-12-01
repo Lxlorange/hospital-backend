@@ -1,6 +1,7 @@
 package com.itmk.netSystem.phoneChat.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
@@ -37,12 +38,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -86,6 +91,24 @@ public class PhoneProjectController {
     private EvaluateService evaluateService;
     @Autowired
     private WaitlistService waitlistService;
+    private int scheduleQueryDays=12;
+    @GetMapping("/config/scheduleQueryDays")
+    public ResultVo getScheduleQueryDays() {
+        return ResultUtils.success("success", scheduleQueryDays);
+    }
+
+    @PostMapping("/config/scheduleQueryDays")
+    public ResultVo setScheduleQueryDays(@RequestBody Map<String, Integer> body) {
+        Integer days = body != null ? body.get("days") : null;
+        if (days == null) {
+            return ResultUtils.error("缺少参数: days");
+        }
+        if (days < 1 || days > 60) {
+            return ResultUtils.error("设置范围为1-60天");
+        }
+        scheduleQueryDays = days;
+        return ResultUtils.success("success", scheduleQueryDays);
+    }
     // 创建一个 API 限流器缓存 (防“飞快抢号”)
     // 缓存 10000 个用户，10分钟后过期
     private final Cache<String, RateLimiter> userRateLimiters = CacheBuilder.newBuilder()
@@ -314,17 +337,18 @@ public class PhoneProjectController {
      */
     @GetMapping("/getDoctor")
     public ResultVo getDoctor(String userId,String doctorId){
-        DoctorInformationNum parm = new DoctorInformationNum();
-        parm.setDoctorId(doctorId);
-        // 获取服务器当前日期
-        LocalDate currentDate = LocalDate.now();
-        // 设置日期格式化模板
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        // 将当前日期格式化为 "yyyy-MM-dd" 字符串
-        String formattedDate = currentDate.format(dateFormatter);
-        parm.setStartDate(formattedDate);
-        List<ScheduleDetail> scheduleDetails = setWorkService.selectById(parm);
-        return ResultUtils.success("成功",scheduleDetails);
+        try {
+            Long Id = Long.parseLong(doctorId);
+            LocalDate date = LocalDate.now();
+            LocalDate futureDate = LocalDate.now().plusDays(scheduleQueryDays);
+            String now = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String future = futureDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            List<ScheduleDetail> result= setWorkService.findSchedulesByDoctorAndDateRange(Id,now,future);
+            return ResultUtils.success("成功",result);
+        }catch (NumberFormatException e) {
+            e.printStackTrace();
+            return ResultUtils.error("错误的医生ID格式", 400);
+        }
     }
 
 
@@ -549,6 +573,31 @@ public class PhoneProjectController {
     }
 
 
+
+    private int scheduleQueryHours=6;
+    private int scheduleQueryMinutes=30;
+    @GetMapping("/config/scheduleQueryTime")
+    public ResultVo getScheduleQueryTime() {
+        return ResultUtils.success("success", scheduleQueryHours,scheduleQueryMinutes);
+    }
+
+    @PostMapping("/config/scheduleQueryTime")
+    public ResultVo setScheduleQueryTime(@RequestBody Map<String, Integer> body) {
+        Integer hours = body != null ? body.get("hours") : null;
+        Integer minutes = body != null ? body.get("minutes") : null;
+        if (hours == null || minutes == null) {
+            return ResultUtils.error("缺少参数: hours 或 minutes");
+        }
+        if (hours < 0 || hours >= 24) {
+            return ResultUtils.error("设置范围为0-23时");
+        }
+        if (minutes < 0 || minutes >= 60) {
+            return ResultUtils.error("设置范围为0-59分");
+        }
+        scheduleQueryHours=hours;
+        scheduleQueryMinutes=minutes;
+        return ResultUtils.success("success", scheduleQueryHours,scheduleQueryMinutes);
+    }
     /**
      * @description: 创建一个新的预约订单，这是一个事务性操作。
      * @param makeOrde 包含预约信息的订单对象
@@ -588,7 +637,30 @@ public class PhoneProjectController {
         if (schedule == null) {
             return ResultUtils.error("无效的排班信息!");
         }
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            LocalDate today = now.toLocalDate();
+            LocalTime nowTime = now.toLocalTime();
 
+            // 每日 6:30 开始放号
+            LocalTime dailyReleaseStart = LocalTime.of(scheduleQueryHours, scheduleQueryMinutes);
+            if (nowTime.isBefore(dailyReleaseStart)) {
+            return ResultUtils.error("当前未到放号时间（每日"+scheduleQueryHours+":"+scheduleQueryMinutes+"开始）");
+            }
+
+            LocalDate appointmentDate = schedule.getTimes();
+            if (appointmentDate == null) {
+                return ResultUtils.error("排班日期异常，无法预约");
+            }
+            if (appointmentDate.isBefore(today)) {
+                return ResultUtils.error("不能预约已过期号源");
+            }
+            if (appointmentDate.isAfter(today.plusDays(scheduleQueryDays))) {
+                return ResultUtils.error("仅可预约"+scheduleQueryDays+"日内号源");
+            }
+        } catch (Exception ignored) {
+            return ResultUtils.error("系统错误，无法校验放号规则");
+        }
         // 检查剩余号源
         if(schedule.getLastAmount() <= 0){
             return ResultUtils.error("今日号数已经被预约完，请选择其他排班!");
@@ -961,6 +1033,44 @@ public class PhoneProjectController {
         return ResultUtils.success("查询成功", list);
     }
 
+    @PostMapping("/reapply")
+    public ResultVo reapply(@RequestBody Map<String, Object> body) {
+        Integer makeId = null;
+        if (body != null) {
+            Object v = body.get("makeId");
+            if (v instanceof Number) {
+                makeId = ((Number) v).intValue();
+            } else if (v instanceof String) {
+                try { makeId = Integer.parseInt((String) v); } catch (Exception ignored) {}
+            }
+        }
+        if (makeId == null) {
+            return ResultUtils.error("缺少参数: makeId");
+        }
+        UpdateWrapper<MakeOrder> uw = new UpdateWrapper<>();
+        uw.lambda()
+                .eq(MakeOrder::getMakeId, makeId)
+                .set(MakeOrder::getHasCall, "1")
+                .set(MakeOrder::getMissed, "0")
+                .set(MakeOrder::getSignInStatus, "0")
+                .set(MakeOrder::getCalledTime, new java.util.Date())
+                .set(MakeOrder::getStatus, "1");
+        boolean ok = callService.update(null, uw);
+        if (ok) {
+            MakeOrder updated = callService.getById(makeId);
+            return ResultUtils.success("已申请重新排号", updated);
+        }
+        return ResultUtils.error("申请失败");
+    }
+
+    @PostMapping("/checkIn")
+    public ResultVo checkIn(@RequestBody MakeOrder makeOrder){
+        if (callService.checkIn(makeOrder.getMakeId())) {
+            return ResultUtils.success("成功!");
+        }
+        return ResultUtils.error("失败!");
+    }
+
     /**
      * @description: 为指定用户账户添加一个新的就诊人信息。
      * @param visitUser 包含新就诊人信息的对象
@@ -1118,4 +1228,3 @@ public class PhoneProjectController {
         return ResultUtils.error("新增失败!");
     }
 }
-
