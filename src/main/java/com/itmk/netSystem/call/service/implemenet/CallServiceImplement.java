@@ -21,6 +21,8 @@ import java.util.List;
 public class CallServiceImplement extends ServiceImpl<CallMapper, MakeOrder> implements CallService {
    @Autowired
    private SeeService seeService;
+   @Autowired
+   private com.itmk.netSystem.setWork.service.setWorkService setWorkService;
     @Override
     public MakeOrder getMakeOrderDetail(Integer makeId) {
         return this.baseMapper.selectById(makeId);
@@ -66,6 +68,7 @@ public class CallServiceImplement extends ServiceImpl<CallMapper, MakeOrder> imp
         com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<MakeOrder> uw = new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<>();
         uw.lambda()
                 .eq(MakeOrder::getMakeId, makeOrder.getMakeId())
+                .eq(MakeOrder::getHasCall, "0")
                 .set(MakeOrder::getHasCall, "1")
                 .set(MakeOrder::getCalledTime, new Date())
                 .set(MakeOrder::getMissed, "0")
@@ -91,11 +94,159 @@ public class CallServiceImplement extends ServiceImpl<CallMapper, MakeOrder> imp
     @Override
     @Transactional
     public boolean checkIn(Integer makeId) {
-        MakeOrder update = new MakeOrder();
-        update.setMakeId(makeId);
-        update.setSignInStatus("1");
-        update.setSignInTime(new Date());
-        update.setMissed("0");
-        return this.baseMapper.updateById(update) > 0;
+        MakeOrder order = this.baseMapper.selectById(makeId);
+        if (order == null) {
+            return false;
+        }
+        if (!"1".equals(order.getStatus())) {
+            return false;
+        }
+        if ("1".equals(order.getHasVisit())) {
+            return false;
+        }
+        java.time.LocalDate today = java.time.LocalDate.now();
+        try {
+            java.time.LocalDate appointmentDate = java.time.LocalDate.parse(order.getTimes(), java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            if (!today.equals(appointmentDate)) {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        Integer scheduleId = order.getScheduleId();
+        if (scheduleId == null) {
+            return false;
+        }
+        com.itmk.netSystem.setWork.entity.ScheduleDetail schedule = null;
+        try {
+            java.util.List<com.itmk.netSystem.setWork.entity.ScheduleDetail> list = setWorkService.selectByWorkId(scheduleId);
+            if (list != null && !list.isEmpty()) {
+                schedule = list.get(0);
+            }
+        } catch (Exception ignored) {}
+        if (schedule == null) {
+            return false;
+        }
+        Integer timeSlot = schedule.getTimeSlot();
+        java.time.LocalTime now = java.time.LocalTime.now();
+        boolean inSlot;
+        if (timeSlot != null && timeSlot == 0) {
+            inSlot = !now.isAfter(java.time.LocalTime.NOON);
+        } else if (timeSlot != null && timeSlot == 1) {
+            inSlot = !now.isBefore(java.time.LocalTime.NOON);
+        } else {
+            inSlot = true;
+        }
+        if (!inSlot) {
+            return false;
+        }
+        com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<MakeOrder> uw = new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<>();
+        uw.lambda()
+                .eq(MakeOrder::getMakeId, makeId)
+                .set(MakeOrder::getSignInStatus, "1")
+                .set(MakeOrder::getSignInTime, new Date())
+                .set(MakeOrder::getMissed, "0");
+        return this.baseMapper.update(null, uw) > 0;
+    }
+
+    public java.util.List<MakeOrder> listScheduleQueue(Integer scheduleId) {
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<MakeOrder> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        qw.lambda()
+                .eq(MakeOrder::getScheduleId, scheduleId)
+                .eq(MakeOrder::getStatus, "1")
+                .eq(MakeOrder::getHasVisit, "0")
+                .eq(MakeOrder::getSignInStatus, "1")
+                .orderByAsc(MakeOrder::getSignInTime)
+                .orderByAsc(MakeOrder::getCreateTime)
+                .orderByAsc(MakeOrder::getMakeId);
+        return this.baseMapper.selectList(qw);
+    }
+
+    @Transactional
+    public MakeOrder callNext(Integer scheduleId) {
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<MakeOrder> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        qw.lambda()
+                .eq(MakeOrder::getScheduleId, scheduleId)
+                .eq(MakeOrder::getStatus, "1")
+                .eq(MakeOrder::getHasVisit, "0")
+                .eq(MakeOrder::getSignInStatus, "1")
+                .eq(MakeOrder::getHasCall, "0")
+                .orderByAsc(MakeOrder::getSignInTime)
+                .orderByAsc(MakeOrder::getCreateTime)
+                .orderByAsc(MakeOrder::getMakeId)
+                .last("limit 1");
+        MakeOrder next = this.baseMapper.selectOne(qw);
+        if (next == null) {
+            return null;
+        }
+        callVisit(next);
+        return this.baseMapper.selectById(next.getMakeId());
+    }
+
+    @Override
+    public java.util.Map<String, Object> getQueueStatus(Integer makeId) {
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        MakeOrder order = this.baseMapper.selectById(makeId);
+        if (order == null) {
+            result.put("aheadCount", 0);
+            result.put("position", 0);
+            result.put("totalUncalled", 0);
+            result.put("totalQueued", 0);
+            result.put("inQueue", false);
+            return result;
+        }
+        Integer scheduleId = order.getScheduleId();
+        if (scheduleId == null) {
+            result.put("aheadCount", 0);
+            result.put("position", 0);
+            result.put("totalUncalled", 0);
+            result.put("totalQueued", 0);
+            result.put("inQueue", false);
+            return result;
+        }
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<MakeOrder> uncalledQ = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        uncalledQ.lambda()
+                .eq(MakeOrder::getScheduleId, scheduleId)
+                .eq(MakeOrder::getStatus, "1")
+                .eq(MakeOrder::getHasVisit, "0")
+                .eq(MakeOrder::getSignInStatus, "1")
+                .eq(MakeOrder::getHasCall, "0")
+                .orderByAsc(MakeOrder::getSignInTime)
+                .orderByAsc(MakeOrder::getCreateTime)
+                .orderByAsc(MakeOrder::getMakeId);
+        java.util.List<MakeOrder> uncalledList = this.baseMapper.selectList(uncalledQ);
+        int totalUncalled = uncalledList.size();
+        int totalQueued = listScheduleQueue(scheduleId).size();
+
+        boolean signedIn = "1".equals(order.getSignInStatus());
+        boolean called = "1".equals(order.getHasCall());
+
+        int ahead = 0;
+        int position = 0;
+        if (!signedIn) {
+            ahead = totalUncalled;
+            position = totalUncalled + 1;
+        } else if (called) {
+            ahead = 0;
+            position = 0;
+        } else {
+            for (int i = 0; i < uncalledList.size(); i++) {
+                MakeOrder m = uncalledList.get(i);
+                if (java.util.Objects.equals(m.getMakeId(), order.getMakeId())) {
+                    ahead = i;
+                    position = i + 1;
+                    break;
+                }
+            }
+        }
+        result.put("aheadCount", ahead);
+        result.put("position", position);
+        result.put("totalUncalled", totalUncalled);
+        result.put("totalQueued", totalQueued);
+        result.put("inQueue", signedIn && !called);
+        result.put("hasCall", order.getHasCall());
+        result.put("signInStatus", order.getSignInStatus());
+        result.put("scheduleId", scheduleId);
+        return result;
     }
 }

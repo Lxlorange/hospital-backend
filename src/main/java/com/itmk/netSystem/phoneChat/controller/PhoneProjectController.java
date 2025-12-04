@@ -827,6 +827,12 @@ public class PhoneProjectController {
         return ResultUtils.success("取消成功");
     }
 
+    @GetMapping("/queueStatus")
+    public ResultVo getQueueStatus(@RequestParam("makeId") Integer makeId) {
+        java.util.Map<String, Object> status = callService.getQueueStatus(makeId);
+        return ResultUtils.success("success", status);
+    }
+
     /**
      * 号源为0时，加入候补队列
      */
