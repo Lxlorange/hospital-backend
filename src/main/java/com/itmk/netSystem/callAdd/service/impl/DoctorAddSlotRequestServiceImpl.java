@@ -81,7 +81,11 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
         order.setHasCall("0");
         if (schedule.getLastAmount() != null && schedule.getLastAmount() > 0) {
             schedule.setLastAmount(schedule.getLastAmount()-1);
-            setWorkService.saveOrUpdate(schedule);
+            try {
+                setWorkService.updateById(schedule);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
         return callService.save(order);
     }
