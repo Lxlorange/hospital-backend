@@ -113,11 +113,6 @@
             <version>1.2.83</version> <!-- 使用你查找到的最新版本 -->
         </dependency>
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>druid-spring-boot-starter</artifactId>
-            <version>1.2.23</version>
-        </dependency>
-        <dependency>
 
             <groupId>com.anji-plus</groupId>
 
