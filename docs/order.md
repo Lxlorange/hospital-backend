@@ -255,14 +255,14 @@
 
 **curl 测试示例**
 ```bash
-# 患者登录态（Bearer），查询自己订单在对应排班的队列位置
+# 患者登录态，查询自己订单在对应排班的队列位置
 MAKE_ID=12345
 curl -sS "http://localhost:8089/wxapi/allApi/queueStatus?makeId=${MAKE_ID}" \
-  -H "Authorization: Bearer <patient_token>"
+  -H "Token: "
 ```
 
 ### 3.2 患者签到（加入当日排班队列）
-- **接口路径**：`http://localhost:8089/api/makeOrder/checkIn`
+- **接口路径**：`http://localhost:8089/api/wxapi/allApi/checkIn`
 - **请求方式**：`POST`
 - **Content-Type**：`application/json`
 - **Body**：
@@ -275,17 +275,12 @@ curl -sS "http://localhost:8089/wxapi/allApi/queueStatus?makeId=${MAKE_ID}" \
   - 仅允许“预约当天”签到（同 `times`）
   - 仅允许在对应时段：`timeSlot=0`（上午，<= 12:00）、`timeSlot=1`（下午，>= 12:00）
   - 仅对“有效预约且未就诊”的订单开放
-
+```bash
+curl -sS -X POST "http://127.0.0.1:8089/wxapi/allApi/checkIn" \
+  -d '{"makeId": 15898}'
+```
 > 后端实现：`CallServiceImplement#checkIn`（校验与落库），控制器入口：`CallController#checkIn`
 
-**curl 测试示例**
-```bash
-# 后台/医生登录态（需要具备 sys:makeOrder:call 权限）
-curl -sS -X POST "http://localhost:8089/api/makeOrder/checkIn" \
-  -H "Content-Type: application/json" \
-  -H "token: <backend_or_doctor_token>" \
-  -d '{"makeId": 12345}'
-```
 
 ### 3.3 医生查看排班签到队列
 - **接口路径**：`http://localhost:8089/api/makeOrder/queue/{scheduleId}`

@@ -82,7 +82,6 @@ public class CallController {
     }
 
     @GetMapping("/queue/{scheduleId}")
-    @PreAuthorize("hasAuthority('sys:makeOrder:pendingList')")
     public ResultVo getScheduleQueue(@PathVariable("scheduleId") Integer scheduleId) {
         List<MakeOrder> list = callService.listScheduleQueue(scheduleId);
         return ResultUtils.success("查询排班签到队列成功", list);
