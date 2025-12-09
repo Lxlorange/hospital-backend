@@ -128,9 +128,7 @@ public class LeaveRequestController {
                         item.setNickName(user.getNickName());
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            } catch (Exception ignored) {}
 
             // 从排班获取日期与时段
             if (req.getScheduleId() != null) {

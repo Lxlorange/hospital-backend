@@ -98,6 +98,9 @@ public class CallController {
     @GetMapping("/getList")
     public ResultVo getList(CallPage parm){
         SysUser user = userWebService.getById(parm.getDoctorId());
+        if (user == null) {
+            return ResultUtils.error("医生不存在");
+        }
         IPage<MakeOrder> page = new Page<>(parm.getCurrentPage(),parm.getPageSize());
         MPJLambdaWrapper<MakeOrder> query = new MPJLambdaWrapper<>();
         query.selectAll(MakeOrder.class)

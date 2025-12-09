@@ -210,8 +210,7 @@ public class ImageTransferController {
             // 构造图片相对路径，给前端使用
             url = "/" + newName;
         } catch (IOException e) {
-            e.printStackTrace();
-            return ResultUtils.error("文件上传失败"); // 上传失败返回更明确的错误信息
+            return ResultUtils.error("文件上传失败");
         }
 
         // 成功返回带前缀的完整路径
