@@ -512,6 +512,7 @@ public class PhoneProjectController {
                 vo.setVisitId(list.get(i).getVisitId());
                 vo.setName(list.get(i).getVisitname());
                 vo.setBirthday(list.get(i).getBirthday());
+                vo.setSex(list.get(i).getSex());
                 treats.add(vo);
             }
         }

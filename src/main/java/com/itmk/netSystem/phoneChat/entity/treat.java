@@ -8,13 +8,14 @@ public class treat {
     private Integer visitId;
     private String name;
     private String birthday;
+    private String sex;
 
     /**
      * 检查就诊人ID是否有效。
      * @return 如果visitId不为null且大于0，则返回true。
      */
     public boolean hasValidId() {
-        return this.visitId != null && this.visitId > 0;
+        return this.visitId != null && this.visitId > 0 && (this.sex == "0" || this.sex == "1");
     }
 
     /**
