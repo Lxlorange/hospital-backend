@@ -58,6 +58,8 @@ public class userWebController {
     private AuthenticationManager authenticationManager; // Spring Security认证管理器
     @Autowired
     private PasswordEncoder passwordEncoder; // 密码编码器
+    @Autowired
+    private com.itmk.netSystem.loginLog.service.LoginLogService loginLogService;
 
     /**
      * 用户登录接口
@@ -95,6 +97,18 @@ public class userWebController {
         map.put("username",user.getUsername());
         String token = jwtUtils.generateToken(map);
         vo.setToken(token);
+
+        com.itmk.netSystem.loginLog.entity.LoginLog log = new com.itmk.netSystem.loginLog.entity.LoginLog();
+        log.setUserId(user.getUserId());
+        log.setUsername(user.getUsername());
+        log.setNickName(user.getNickName());
+        String ip = request.getHeader("X-Forwarded-For");
+        if (StringUtils.isEmpty(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        log.setIpAddr(ip);
+        log.setLoginTime(new java.util.Date());
+        loginLogService.save(log);
 
         return ResultUtils.success("成功", vo);
     }
