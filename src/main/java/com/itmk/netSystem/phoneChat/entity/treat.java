@@ -7,6 +7,7 @@ import lombok.Data;
 public class treat {
     private Integer visitId;
     private String name;
+    private String birthday;
 
     /**
      * 检查就诊人ID是否有效。
@@ -38,6 +39,7 @@ public class treat {
     public void clearData() {
         this.visitId = null;
         this.name = null;
+        this.birthday = null;
     }
 
     /**

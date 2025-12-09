@@ -511,6 +511,7 @@ public class PhoneProjectController {
                 treat vo = new treat();
                 vo.setVisitId(list.get(i).getVisitId());
                 vo.setName(list.get(i).getVisitname());
+                vo.setBirthday(list.get(i).getBirthday());
                 treats.add(vo);
             }
         }
