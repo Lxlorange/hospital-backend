@@ -63,6 +63,9 @@ public class menuWebNetController {
     @GetMapping("/getMenuList")
     public ResultVo getMenuList(Long userId){
         SysUser user = userWebService.getById(userId);
+        if (user == null) {
+            return ResultUtils.error("用户不存在");
+        }
         List<SysMenu> menuList = menuWebNetService.getMenuByUserId(user.getUserId());
 
         // 过滤菜单数据，去掉按钮数据 (类型为 '2')

@@ -346,7 +346,6 @@ public class PhoneProjectController {
             List<ScheduleDetail> result= setWorkService.findSchedulesByDoctorAndDateRange(Id,now,future);
             return ResultUtils.success("成功",result);
         }catch (NumberFormatException e) {
-            e.printStackTrace();
             return ResultUtils.error("错误的医生ID格式", 400);
         }
     }
@@ -401,6 +400,9 @@ public class PhoneProjectController {
                 .leftJoin(Department.class, Department::getDeptId, SysUser::getDeptId)
                 .eq(MakeOrder::getMakeId, makeId);
         MakeOrder order = callService.getOne(query);
+        if (order == null) {
+            return ResultUtils.error("未找到该预约订单");
+        }
         return ResultUtils.success("成功", order);
     }
 
@@ -757,13 +759,9 @@ public class PhoneProjectController {
                     sb.append("请按预约时间前来就诊，祝您健康！");
                     message.setText(sb.toString());
                     mailSender.send(message);
-                    System.out.println("邮件已发送到：" + toEmail);
                 } else {
-                    System.out.println("未找到用户邮箱，跳过邮件发送。");
                 }
             } catch (Exception e) {
-                // 发送邮件失败不影响主流程，记录异常即可
-                System.err.println("发送挂号成功邮件失败：" + e.getMessage());
             }
 
             return ResultUtils.success("预约成功!");
@@ -805,7 +803,6 @@ public class PhoneProjectController {
                     return ResultUtils.error("已临近就诊时间（少于1天），无法取消预约!");
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 return ResultUtils.error("系统错误，无法处理您的取消请求。");
             }
         }
@@ -905,7 +902,8 @@ public class PhoneProjectController {
                 dept = teamDepartmentService.getById(d.getDeptId());
             }
             m.put("deptName", dept != null ? dept.getDeptName() : "");
-            ScheduleDetail sd= setWorkService.selectByWorkId(e.getScheduleId()).get(0);
+            List<ScheduleDetail> sdList = setWorkService.selectByWorkId(e.getScheduleId());
+            ScheduleDetail sd = (sdList != null && !sdList.isEmpty()) ? sdList.get(0) : null;
             String times = "";
             String timesAreaLabel = "";
             String week = "";
@@ -1183,7 +1181,7 @@ public class PhoneProjectController {
                 .eq(WxUser::getPassword,DigestUtils.md5DigestAsHex(wxUser.getPassword().getBytes()));
         WxUser user = userPatientPhoneService.getOne(query);
         if(user == null){
-            return ResultUtils.error("错误!");
+            return ResultUtils.error("用户名或密码错误", 401);
         }
         wxUser.setCreateTime(new Date());
         wxUser.setStatus(true);
@@ -1197,7 +1195,7 @@ public class PhoneProjectController {
         map.put("username", user.getUserName());
         String token = jwtUtils.generateToken(map); // 调用项目中已有的jwtUtils实例
 
-        System.out.println("🎉 小程序登录成功，为用户 " + user.getUserName() + " 生成的Token是: " + token);
+        
         Login vo = new Login();
         vo.setUserId(user.getUserId());
         return ResultUtils.success("成功!",vo);

@@ -140,7 +140,8 @@ public class WaitlistWebController {
                 if (dept != null) deptName = dept.getDeptName();
             }
             m.put("deptName", deptName);
-            ScheduleDetail sd = setWorkService.selectByWorkId(e.getScheduleId()).get(0);
+            List<ScheduleDetail> sdList = setWorkService.selectByWorkId(e.getScheduleId());
+            ScheduleDetail sd = (sdList != null && !sdList.isEmpty()) ? sdList.get(0) : null;
             String times = "";
             String timesAreaLabel = "";
             String week = "";

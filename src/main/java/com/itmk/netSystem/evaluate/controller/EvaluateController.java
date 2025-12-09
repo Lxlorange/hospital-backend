@@ -75,6 +75,9 @@ public class EvaluateController {
     public ResultVo getById(@PathVariable("sguuestId") Integer sguuestId){
         // 使用在Service中新定义的、能获取用户名的 service 方法
         Suggest suggest = evaluateService.getByIdWithUser(sguuestId);
+        if (suggest == null) {
+            return ResultUtils.error("未找到该建议");
+        }
         return ResultUtils.success("查询成功", suggest);
     }
 

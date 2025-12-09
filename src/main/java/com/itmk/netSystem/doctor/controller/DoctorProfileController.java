@@ -25,6 +25,9 @@ public class DoctorProfileController {
     @GetMapping("/getDoctorProfile")
     public ResultVo getDoctorProfile(@RequestParam Long doctorId) {
         DoctorProfileVo doctorProfile = doctorProfileService.getDoctorProfile(doctorId);
+        if (doctorProfile == null) {
+            return ResultUtils.error("未找到该医生个人主页信息");
+        }
         return ResultUtils.success("查询成功", doctorProfile);
     }
 
@@ -50,6 +53,9 @@ public class DoctorProfileController {
     @GetMapping("/getMyProfile")
     public ResultVo getMyProfile() {
         DoctorProfileVo doctorProfile = doctorProfileService.getMyProfile();
+        if (doctorProfile == null) {
+            return ResultUtils.error("未找到当前医生个人主页信息");
+        }
         return ResultUtils.success("查询成功", doctorProfile);
     }
 

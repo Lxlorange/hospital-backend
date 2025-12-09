@@ -105,6 +105,7 @@ public class CallServiceImplement extends ServiceImpl<CallMapper, MakeOrder> imp
             return false;
         }
         java.time.LocalDate today = java.time.LocalDate.now();
+        /*
         try {
             java.time.LocalDate appointmentDate = java.time.LocalDate.parse(order.getTimes(), java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             if (!today.equals(appointmentDate)) {
@@ -112,7 +113,7 @@ public class CallServiceImplement extends ServiceImpl<CallMapper, MakeOrder> imp
             }
         } catch (Exception e) {
             return false;
-        }
+        }*/
         Integer scheduleId = order.getScheduleId();
         if (scheduleId == null) {
             return false;
