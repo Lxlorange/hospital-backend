@@ -16,6 +16,7 @@ public class OperationLog {
     private String username;
     private String nickName;
     private String ipAddr;
+    private String operation;
     private String method;
     private String uri;
     private Integer status;

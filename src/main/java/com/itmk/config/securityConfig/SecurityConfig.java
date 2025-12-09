@@ -82,12 +82,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public OperationLogFilter operationLogFilter(com.itmk.netSystem.operationLog.service.OperationLogService operationLogService) {
-        return new OperationLogFilter(operationLogService);
-    }
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider, JwtAuthenticationFilter jwtAuthenticationFilter, OperationLogFilter operationLogFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         String[] whitelist = parseWhitelist(ignoreUrl);
         http.csrf(csrf -> csrf.disable());
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
@@ -99,7 +94,6 @@ public class SecurityConfig {
         );
         http.authenticationProvider(authenticationProvider);
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAfter(operationLogFilter, JwtAuthenticationFilter.class);
         http.exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(401);
