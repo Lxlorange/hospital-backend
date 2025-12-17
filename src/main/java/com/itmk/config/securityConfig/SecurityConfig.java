@@ -97,6 +97,7 @@ public class SecurityConfig {
                 .requestMatchers("/webjars/**").permitAll()
                 .requestMatchers("/doc.html").permitAll()
                 .requestMatchers("/favicon.ico").permitAll()
+                .requestMatchers("/images/**").permitAll()
                 .anyRequest().authenticated()
         );
         http.authenticationProvider(authenticationProvider);
