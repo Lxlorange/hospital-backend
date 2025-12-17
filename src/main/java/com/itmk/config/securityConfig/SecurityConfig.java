@@ -98,6 +98,8 @@ public class SecurityConfig {
                 .requestMatchers("/doc.html").permitAll()
                 .requestMatchers("/favicon.ico").permitAll()
                 .requestMatchers("/images/**").permitAll()
+                .requestMatchers("/api/statistic/**").permitAll()
+                .requestMatchers("/api/LLM/**").permitAll()
                 .anyRequest().authenticated()
         );
         http.authenticationProvider(authenticationProvider);
