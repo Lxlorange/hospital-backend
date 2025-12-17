@@ -90,6 +90,13 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(whitelist).permitAll()
                 .requestMatchers("/captcha/**").permitAll()
+                .requestMatchers("/wxapi/allApi/login").permitAll()
+                .requestMatchers("/api/upload/uploadImage").permitAll()
+                .requestMatchers("/api/sysUser/getImage").permitAll()
+                .requestMatchers("/api/sysUser/login").permitAll()
+                .requestMatchers("/webjars/**").permitAll()
+                .requestMatchers("/doc.html").permitAll()
+                .requestMatchers("/favicon.ico").permitAll()
                 .anyRequest().authenticated()
         );
         http.authenticationProvider(authenticationProvider);
@@ -118,7 +125,7 @@ public class SecurityConfig {
 
     private String[] parseWhitelist(String csv) {
         if (csv == null || csv.isEmpty()) {
-            return new String[]{"/api/sysUser/login", "/api/sysUser/getImage"};
+            return new String[]{"/api/sysUser/login", "/api/sysUser/getImage","/wxapi/allApi/**"};
         }
         return java.util.Arrays.stream(csv.split(","))
                 .map(String::trim)
