@@ -30,6 +30,12 @@ public class ChatPayloadBuilder {
 
     private String escape(String text) {
         if (text == null) return "";
-        return text.replace("\\", "\\\\").replace("\"", "\\\"");
+        return text.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t")
+                .replace("\b", "\\b")
+                .replace("\f", "\\f");
     }
 }
