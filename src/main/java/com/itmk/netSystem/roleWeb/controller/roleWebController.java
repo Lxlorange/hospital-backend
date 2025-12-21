@@ -49,6 +49,9 @@ public class roleWebController {
     @GetMapping("/{roleId}")
     public ResultVo getRoleById(@PathVariable("roleId") Long roleId) {
         SysRole role = roleWebService.getById(roleId);
+        if (role == null) {
+            return ResultUtils.error("未找到角色");
+        }
         return ResultUtils.success("查询成功", role);
     }
 

@@ -58,6 +58,8 @@ public class userWebController {
     private AuthenticationManager authenticationManager; // Spring Security认证管理器
     @Autowired
     private PasswordEncoder passwordEncoder; // 密码编码器
+    @Autowired
+    private com.itmk.netSystem.loginLog.service.LoginLogService loginLogService;
 
     /**
      * 用户登录接口
@@ -96,6 +98,18 @@ public class userWebController {
         String token = jwtUtils.generateToken(map);
         vo.setToken(token);
 
+        com.itmk.netSystem.loginLog.entity.LoginLog log = new com.itmk.netSystem.loginLog.entity.LoginLog();
+        log.setUserId(user.getUserId());
+        log.setUsername(user.getUsername());
+        log.setNickName(user.getNickName());
+        String ip = request.getHeader("X-Forwarded-For");
+        if (StringUtils.isEmpty(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        log.setIpAddr(ip);
+        log.setLoginTime(new java.util.Date());
+        loginLogService.save(log);
+
         return ResultUtils.success("成功", vo);
     }
 
@@ -104,34 +118,18 @@ public class userWebController {
      */
     @PostMapping("/getImage")
     public ResultVo imageCode(HttpServletRequest request) {
-        // 获取session
         jakarta.servlet.http.HttpSession session = request.getSession();
-        // 生成验证码文本
         String text = defaultKaptcha.createText();
-        // 存放到session
         session.setAttribute("code", text);
-        // 生成图片并转为base64
-        BufferedImage bufferedImage = defaultKaptcha.createImage(text);
-        ByteArrayOutputStream outputStream = null;
-        try {
-            outputStream = new ByteArrayOutputStream();
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            BufferedImage bufferedImage = defaultKaptcha.createImage(text);
             ImageIO.write(bufferedImage, "jpg", outputStream);
             String base64 = Base64.encodeBase64String(outputStream.toByteArray());
             String captchaBase64 = "data:image/jpeg;base64," + base64.replaceAll("\r\n", "");
-            ResultVo result = new ResultVo("生成成功", 200, captchaBase64);
-            return result;
+            return ResultUtils.success("生成成功", captchaBase64);
         } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (outputStream != null) {
-                    outputStream.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            return ResultUtils.error("生成失败");
         }
-        return null;
     }
 
     /**
@@ -154,6 +152,9 @@ public class userWebController {
     public ResultVo getInfo(Long userId) {
         // 根据id查询用户信息
         SysUser user = userWebService.getById(userId);
+        if (user == null) {
+            return ResultUtils.error("用户不存在");
+        }
         List<SysMenu> menuList = null;
 
         menuList = menuWebNetService.getMenuByUserId(user.getUserId());

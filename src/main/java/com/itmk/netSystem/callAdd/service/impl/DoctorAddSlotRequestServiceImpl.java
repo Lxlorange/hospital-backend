@@ -35,7 +35,8 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
     public boolean submitAddSlotRequest(DoctorAddSlotRequest request) {
         // 检查排班是否存在且已满
         System.out.println(request.getScheduleId());
-        ScheduleDetail schedule = setWorkService.selectByWorkId(request.getScheduleId()).get(0);
+        java.util.List<ScheduleDetail> list = setWorkService.selectByWorkId(request.getScheduleId());
+        ScheduleDetail schedule = (list != null && !list.isEmpty()) ? list.get(0) : null;
         if (schedule == null) {
             return false;
         }
@@ -81,7 +82,9 @@ public class DoctorAddSlotRequestServiceImpl extends ServiceImpl<DoctorAddSlotRe
         order.setHasCall("0");
         if (schedule.getLastAmount() != null && schedule.getLastAmount() > 0) {
             schedule.setLastAmount(schedule.getLastAmount()-1);
-            setWorkService.saveOrUpdate(schedule);
+            try {
+                setWorkService.updateById(schedule);
+            } catch (Exception ignored) {}
         }
         return callService.save(order);
     }

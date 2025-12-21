@@ -1,6 +1,5 @@
 target
 .idea/
 src/main/java/com/itmk/netSystem/plat
-/uploads
 .DS_Store
 application-test.yml

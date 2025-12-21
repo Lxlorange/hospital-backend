@@ -81,6 +81,12 @@ public class CallController {
         return ResultUtils.success("查询待就诊列表成功", list);
     }
 
+    @GetMapping("/queue/{scheduleId}")
+    public ResultVo getScheduleQueue(@PathVariable("scheduleId") Integer scheduleId) {
+        List<MakeOrder> list = callService.listScheduleQueue(scheduleId);
+        return ResultUtils.success("查询排班签到队列成功", list);
+    }
+
     @GetMapping("/userHistory")
     public ResultVo getUserHistory(CallPage parm) {
         IPage<MakeOrder> page = new Page<>(parm.getCurrentPage(), parm.getPageSize());
@@ -92,6 +98,9 @@ public class CallController {
     @GetMapping("/getList")
     public ResultVo getList(CallPage parm){
         SysUser user = userWebService.getById(parm.getDoctorId());
+        if (user == null) {
+            return ResultUtils.error("医生不存在");
+        }
         IPage<MakeOrder> page = new Page<>(parm.getCurrentPage(),parm.getPageSize());
         MPJLambdaWrapper<MakeOrder> query = new MPJLambdaWrapper<>();
         query.selectAll(MakeOrder.class)
@@ -121,6 +130,16 @@ public class CallController {
             return ResultUtils.success("签到成功!");
         }
         return ResultUtils.error("签到失败!");
+    }
+
+    @PostMapping("/callNext/{scheduleId}")
+    @PreAuthorize("hasAuthority('sys:makeOrder:call')")
+    public ResultVo callNext(@PathVariable("scheduleId") Integer scheduleId) {
+        MakeOrder called = callService.callNext(scheduleId);
+        if (called == null) {
+            return ResultUtils.error("当前无已签到的待叫号患者");
+        }
+        return ResultUtils.success("叫号", called);
     }
 
     /**

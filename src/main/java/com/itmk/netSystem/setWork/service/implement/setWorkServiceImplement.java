@@ -26,7 +26,6 @@ public class setWorkServiceImplement extends ServiceImpl<setWorkMapper, Schedule
 
     @Override
     public List<ScheduleDetail> selectByWorkId(Integer workId) {
-        setWorkMapper workMapper = this.getBaseMapper();
         QueryWrapper<ScheduleDetail> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("schedule_id",workId);
         return this.baseMapper.selectList(queryWrapper);

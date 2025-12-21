@@ -18,4 +18,7 @@ public interface CallService extends IService<MakeOrder> {
     IPage<MakeOrder> getAppointmentHistoryByUserId(IPage<MakeOrder> page, Integer userId);
     void callVisit(MakeOrder makeOrder);
     boolean checkIn(Integer makeId);
+    java.util.List<MakeOrder> listScheduleQueue(Integer scheduleId);
+    MakeOrder callNext(Integer scheduleId);
+    java.util.Map<String, Object> getQueueStatus(Integer makeId);
 }

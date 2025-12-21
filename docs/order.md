@@ -217,3 +217,107 @@
   - `createTime`、`updateTime`
 
 - 审核通过后会创建 `make_order` 订单一条，用于完成加号预约。
+
+---
+
+## 3. 签到排队与叫号
+
+### 3.1 患者查询队列状态（查看前面还有多少号）
+- **接口路径**：`http://localhost:8089/wxapi/allApi/queueStatus`
+- **请求方式**：`GET`
+- **Query 参数**：
+  - `makeId` — 预约订单ID（必填）
+- **成功响应示例**：
+```json
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "aheadCount": 3,
+    "position": 4,
+    "totalUncalled": 6,
+    "totalQueued": 8,
+    "inQueue": true,
+    "hasCall": "0",
+    "signInStatus": "1",
+    "scheduleId": 355
+  }
+}
+```
+- **字段说明**：
+  - `aheadCount`：当前患者前面的未叫号人数（已签到、未就诊、未叫号）
+  - `position`：当前患者在未叫号队列中的名次（1 起）。未签到时为队尾位置。
+  - `totalUncalled`：当前排班未叫号队列的总人数
+  - `totalQueued`：当前排班“已签到且未就诊”的总人数（包含已叫号）
+  - `inQueue`：是否处于未叫号队列（已签到且未叫号）
+
+> 后端实现：`CallServiceImplement#getQueueStatus`（患者端入口：`PhoneProjectController#queueStatus`）
+
+**curl 测试示例**
+```bash
+# 患者登录态，查询自己订单在对应排班的队列位置
+MAKE_ID=12345
+curl -sS "http://localhost:8089/wxapi/allApi/queueStatus?makeId=${MAKE_ID}" \
+  -H "Token: "
+```
+
+### 3.2 患者签到（加入当日排班队列）
+- **接口路径**：`http://localhost:8089/api/wxapi/allApi/checkIn`
+- **请求方式**：`POST`
+- **Content-Type**：`application/json`
+- **Body**：
+```json
+{ "makeId": 12345 }
+```
+- **成功响应**：`{"code":200,"msg":"签到成功!","data":null}`
+- **失败响应**：如不在当日或时段不匹配，返回 `{"code":500,"msg":"签到失败!","data":null}`
+- **规则说明**：
+  - 仅允许“预约当天”签到（同 `times`）
+  - 仅允许在对应时段：`timeSlot=0`（上午，<= 12:00）、`timeSlot=1`（下午，>= 12:00）
+  - 仅对“有效预约且未就诊”的订单开放
+```bash
+curl -sS -X POST "http://127.0.0.1:8089/wxapi/allApi/checkIn" \
+  -d '{"makeId": 15898}'
+```
+> 后端实现：`CallServiceImplement#checkIn`（校验与落库），控制器入口：`CallController#checkIn`
+
+
+### 3.3 医生查看排班签到队列
+- **接口路径**：`http://localhost:8089/api/makeOrder/queue/{scheduleId}`
+- **请求方式**：`GET`
+- **Path 参数**：
+  - `scheduleId` — 排班ID（必填）
+- **成功响应**：返回该排班下“已签到、未就诊”的订单列表，按 `signInTime` 升序。
+
+> 后端实现：`CallServiceImplement#listScheduleQueue`，控制器入口：`CallController#getScheduleQueue`
+
+**curl 测试示例**
+```bash
+# 后台/医生登录态（需要具备 sys:makeOrder:pendingList 权限）
+SCHEDULE_ID=355
+curl -sS "http://localhost:8089/api/makeOrder/queue/${SCHEDULE_ID}" \
+  -H "token: <backend_or_doctor_token>"
+```
+
+### 3.4 医生叫下一位（按队列依序叫号）
+- **接口路径**：`http://localhost:8089/api/makeOrder/callNext/{scheduleId}`
+- **请求方式**：`POST`
+- **Path 参数**：
+  - `scheduleId` — 排班ID（必填）
+- **成功响应**：返回被叫号的订单详情；若队列为空返回错误提示。
+
+> 后端实现：`CallServiceImplement#callNext` + `callVisit`，控制器入口：`CallController#callNext`
+
+**curl 测试示例**
+```bash
+# 后台/医生登录态（需要具备 sys:makeOrder:call 权限）
+SCHEDULE_ID=355
+curl -sS -X POST "http://localhost:8089/api/makeOrder/callNext/${SCHEDULE_ID}" \
+  -H "token: <backend_or_doctor_token>"
+```
+
+### 3.5 排队与叫号的排序规则
+- 队列排序：`sign_in_time` → `create_time` → `make_id` 升序
+- 叫号仅选择队列中“未叫号”的队头患者
+
+---

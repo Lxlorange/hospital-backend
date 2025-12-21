@@ -113,6 +113,9 @@ public class SeeController {
     @GetMapping("/getList")
     public ResultVo getList(SeePage parm){
         SysUser user = userWebService.getById(parm.getDoctorId());
+        if (user == null) {
+            return ResultUtils.error("医生不存在");
+        }
         IPage<MakeOrderVisit> page = new Page<>(parm.getCurrentPage(),parm.getPageSize());
         MPJLambdaWrapper<MakeOrderVisit> query = new MPJLambdaWrapper<>();
         query.selectAll(MakeOrderVisit.class)
