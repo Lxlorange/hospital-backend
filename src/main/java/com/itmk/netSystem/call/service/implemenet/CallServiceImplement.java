@@ -128,19 +128,19 @@ public class CallServiceImplement extends ServiceImpl<CallMapper, MakeOrder> imp
         if (schedule == null) {
             return false;
         }
-        Integer timeSlot = schedule.getTimeSlot();
-        java.time.LocalTime now = java.time.LocalTime.now();
-        boolean inSlot;
-        if (timeSlot != null && timeSlot == 0) {
-            inSlot = !now.isAfter(java.time.LocalTime.NOON);
-        } else if (timeSlot != null && timeSlot == 1) {
-            inSlot = !now.isBefore(java.time.LocalTime.NOON);
-        } else {
-            inSlot = true;
-        }
-        if (!inSlot) {
-            return false;
-        }
+//        Integer timeSlot = schedule.getTimeSlot();
+//        java.time.LocalTime now = java.time.LocalTime.now();
+//        boolean inSlot;
+//        if (timeSlot != null && timeSlot == 0) {
+//            inSlot = !now.isAfter(java.time.LocalTime.NOON);
+//        } else if (timeSlot != null && timeSlot == 1) {
+//            inSlot = !now.isBefore(java.time.LocalTime.NOON);
+//        } else {
+//            inSlot = true;
+//        }
+//        if (!inSlot) {
+//            return false;
+//        }
         com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<MakeOrder> uw = new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<>();
         uw.lambda()
                 .eq(MakeOrder::getMakeId, makeId)
